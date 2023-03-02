@@ -1,79 +1,79 @@
-hidden_state
-input_current
-input_generation_settings
-  --baseline
-  --amplitude_scaling
-  --tau
-  --mean_firing_rate
-  --sampling_rate
-  --duration
-  --FLAG_convert_to_amphere
-  --condition
-  --experimentname
-  --experimentername
-  --experimentnr
-  --trialnr
-membrane_potential
-spikeindices
-thresholds
-thresholdindices
-classification
-classification/apwidth
-  --ahpamp
-  --meanspike
-    --v
-    --spikeindex
-    --threshold
-    --thresholdindex
-    --apwidth
-    --ahpamp
-firing_rate
-mean_threshold
-Analysis
-sta
-  --ic
-  --ic/raw
-  --ic/cor
-  --ic/correg
-  --ic/priorPV
-  --ic/STPV
-  --ic/normalized_peakdistance
-  --x
-    --raw
-    --cor
-    --correg
-    --priorPV
-    --STPV
-    --normalized_peakdistance
-Analysis_Settings
-  --threshold
-    --thresholdmethod
-    --searchthreshold
-    --thresholdwindow
-    --refractory_period
-    --derthreshold
-  --MIanalysis
-    --windowtype
-    --windowsize
-    --factor_ron_roff
-  --staparams
-    --ic
-      --normalize
-      --lambda_original
-      --window
-      --factor_downsampling
-      --lambdaI
-      --projection_whichsta
-    --x
-      --normalize
-      --lambda_original
-      --window
-      --factor_downsampling
-      --lambdaI
-      --projection_whichsta
-  --classification
-    --window
-    --stdwindow
-    --minisi
-  --saveindividualsettings
-normalized_trial
+>hidden_state
+>input_current
+>input_generation_settings
+  |-->baseline
+  |-->amplitude_scaling
+  |-->tau
+  |-->mean_firing_rate
+  |-->sampling_rate
+  |-->duration
+  |-->FLAG_convert_to_amphere
+  |-->condition
+  |-->experimentname
+  |-->experimentername
+  |-->experimentnr
+  |-->trialnr
+>membrane_potential
+>spikeindices
+>thresholds
+>thresholdindices
+>classification
+>classification/apwidth
+  |-->ahpamp
+  |-->meanspike
+    |-->v
+    |-->spikeindex
+    |-->threshold
+    |-->thresholdindex
+    |-->apwidth
+    |-->ahpamp
+>firing_rate
+>mean_threshold
+>Analysis
+>sta
+  |-->ic
+  |-->ic/raw
+  |-->ic/cor
+  |-->ic/correg
+  |-->ic/priorPV
+  |-->ic/STPV
+  |-->ic/normalized_peakdistance
+  |-->x
+    |-->raw
+    |-->cor
+    |-->correg
+    |-->priorPV
+    |-->STPV
+    |-->normalized_peakdistance
+>Analysis_Settings
+  |-->threshold
+    |-->thresholdmethod
+    |-->searchthreshold
+    |-->thresholdwindow
+    |-->refractory_period
+    |-->derthreshold
+  |-->MIanalysis
+    |-->windowtype
+    |-->windowsize
+    |-->factor_ron_roff
+  |-->staparams
+    |-->ic
+      |-->normalize
+      |-->lambda_original
+      |-->window
+      |-->factor_downsampling
+      |-->lambdaI
+      |-->projection_whichsta
+    |-->x
+      |-->normalize
+      |-->lambda_original
+      |-->window
+      |-->factor_downsampling
+      |-->lambdaI
+      |-->projection_whichsta
+  |-->classification
+    |-->window
+    |-->stdwindow
+    |-->minisi
+  |-->saveindividualsettings
+>normalized_trial
