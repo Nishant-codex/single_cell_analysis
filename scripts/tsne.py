@@ -25,8 +25,8 @@ from matplotlib.ticker import NullFormatter
 from sklearn import manifold, datasets
 from analyze_single_cell import collect_drug_and_acsf
 from ephys_set import return_all_ephys_dict
-#%%%
 
+#%%
 def plot_tsne(data_inh:dict,data_exc:dict):
     """_summary_
 
@@ -150,5 +150,4 @@ def plot_tsne_oneoff(data_inh:dict,data_exc:dict):
 
         plt.show()    
 
-#%% 
-acsf,drug = collect_drug_and_acsf(path_files ='C:/Users/Nishant Joshi/Google Drive/Analyzed/' ,condition= ['sag'])        
+# acsf,drug = collect_drug_and_acsf(path_files ='C:/Users/Nishant Joshi/Google Drive/Analyzed/' ,condition= ['sag'])        
