@@ -23,7 +23,7 @@ from sklearn.preprocessing import StandardScaler, normalize
 from PCA import shuffle_prams
 from matplotlib.ticker import NullFormatter
 from sklearn import manifold, datasets
-from single_cell_analysis import collect_drug_and_acsf
+from analyze_single_cell import collect_drug_and_acsf
 from ephys_set import return_all_ephys_dict
 #%%%
 

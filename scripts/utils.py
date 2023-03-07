@@ -1,3 +1,4 @@
+
 import sys 
 import pickle
 import numpy as np 
@@ -16,6 +17,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import sys
 
+
 '''
 idea behind this script is to compile functions that are more frequantly used and are more general 
 
@@ -24,90 +26,6 @@ idea behind this script is to compile functions that are more frequantly used an
 2. join_conditions -> loading data frame containing info about the condition
 
 '''
-
-
-def loadmatInPy(filename:str)->dict:
-	"""	
-	this function should be called instead of direct spio.loadmat
-	as it cures the problem of not properly recovering python dictionaries
-	from mat files. It calls the function check keys to cure all entries
-	which are still mat-objects
-	
-	Args:
-		filename (str): full path to the matlab data file 
-
-	Returns:
-		dict: a dictionary with all the analyzed variables included
-	"""
-
-	def _check_keys(dict):
-		'''
-		checks if entries in dictionary are mat-objects. If yes
-		todict is called to change them to nested dictionaries
-		'''
-		for key in dict:
-			if isinstance(dict[key], spio.matlab.mio5_params.mat_struct):
-				dict[key] = _todict(dict[key])
-		return dict        
-
-	def _todict(matobj):
-		
-		'''
-		A recursive function which constructs nested dictionaries from matobjects
-		'''
-		dict = {}
-		try:
-			for strg in matobj._fieldnames:
-				elem = matobj.__dict__[strg]
-				if isinstance(elem, spio.matlab.mio5_params.mat_struct):
-					dict[strg] = _todict(elem)
-				elif strg =='Analysis':
-					temp = []
-					for i in elem:
-
-						temp.append(_todict(i))
-					dict['Analysis'] = temp
-				else:
-					
-					dict[strg] = elem
-		except:
-			for strg in matobj.keys():
-				elem = matobj[strg]
-				if isinstance(elem, spio.matlab.mio5_params.mat_struct):
-					dict[strg] = _todict(elem)
-				elif strg =='Analysis':
-					temp = []
-					for i in elem:
-						temp.append(_todict(i))
-					dict['Analysis'] = temp
-				else:
-					
-					dict[strg] = elem
-		return dict
-	
-	if ('analyzed' in filename )and ('_CC_' not in filename):
-		Data = []
-		data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)['Data']
-		try:
-			for i in range(len(data)):
-				data_ = data[i]
-				data_ = _todict(data_) 
-				Data.append(_check_keys(data_))
-			return Data
-		except:
-			data_ = data
-			data_ = _todict(data_) 
-			Data.append(_check_keys(data_))
-			return Data
-	elif ('analyzed' in filename) and ('_CC_' in filename):
-		data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)
-		data = _todict(data)          
-	else:
-		data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)['Data']
-		data = _todict(data) 
-	return _check_keys(data)
-
-
 def join_conditions(path:str = None, list_cond:list = None,exc_inh_sep:bool = False)->pd.DataFrame:
 	"""joins condition information together. 
 	To be used for analyzing the metadata and loading files for group analysis
@@ -148,5 +66,93 @@ def join_conditions(path:str = None, list_cond:list = None,exc_inh_sep:bool = Fa
 		return inh, exc
 	else:
 		return new_df
+
+
+
+def loadmatInPy(filename:str)->dict:
+	"""	
+	this function should be called instead of direct spio.loadmat
+	as it cures the problem of not properly recovering python dictionaries
+	from mat files. It calls the function check keys to cure all entries
+	which are still mat-objects
 	
+	Args:
+		filename (str): full path to the matlab data file 
+	Returns:
+		dict: a dictionary with all the analyzed variables included
+	"""
+
+	def _check_keys(dict):
+		'''
+		checks if entries in dictionary are mat-objects. If yes
+		todict is called to change them to nested dictionaries
+		'''
+		for key in dict:
+			if isinstance(dict[key], spio.matlab.mio5_params.mat_struct):
+				dict[key] = _todict(dict[key])
+		return dict        
+
+	def _todict(matobj):
+		
+		'''
+		A recursive function which constructs nested dictionaries from matobjects
+		'''
+		dict = {}
+		try:
+			for strg in matobj._fieldnames:
+				elem = matobj.__dict__[strg]
+				if isinstance(elem, spio.matlab.mio5_params.mat_struct):
+					dict[strg] = _todict(elem)
+				elif strg =='Analysis':
+					temp = []
+					for i in elem:
+
+						temp.append(_todict(i))
+					dict['Analysis'] = temp
+				else:
+					if isinstance(elem,np.ndarray):
+						dict[strg] = elem.tolist()
+					else:
+						dict[strg] = elem
+		except:
+			for strg in matobj.keys():
+				elem = matobj[strg]
+				if isinstance(elem, spio.matlab.mio5_params.mat_struct):
+					dict[strg] = _todict(elem)
+				elif strg =='Analysis':
+					temp = []
+					for i in elem:
+						temp.append(_todict(i))
+					dict['Analysis'] = temp
+				else:
+					if isinstance(elem,np.ndarray):
+						dict[strg] = elem.tolist()
+					else:
+						dict[strg] = elem
+		return dict
+	
+	if ('analyzed' in filename )and ('_CC_' not in filename):
+		Data = []
+		data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)['Data']
+		try:
+			for i in range(len(data)):
+				data_ = data[i]
+				data_ = _todict(data_) 
+				Data.append(_check_keys(data_))
+			return Data
+		except:
+			data_ = data
+			data_ = _todict(data_) 
+			Data.append(_check_keys(data_))
+			return Data
+	elif ('analyzed' in filename) and ('_CC_' in filename):
+		data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)
+		data = _todict(data)          
+	else:
+		data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)['Data']
+		data = _todict(data) 
+	return _check_keys(data)
+
+
+
 

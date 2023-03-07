@@ -97,6 +97,6 @@ def collect_drug_and_acsf(path_files:str, condition:list,seperate_exc_inh:bool=F
 
 
 # %%
-acsf_inh,drug_inh,acsf_exc,drug_exc = collect_drug_and_acsf(path_files ='C:/Users/Nishant Joshi/Google Drive/Analyzed/' ,condition= ['sag'],seperate_exc_inh=True)
+# acsf_inh,drug_inh,acsf_exc,drug_exc = collect_drug_and_acsf(path_files ='C:/Users/Nishant Joshi/Google Drive/Analyzed/' ,condition= ['sag'],seperate_exc_inh=True)
 
 # %%
