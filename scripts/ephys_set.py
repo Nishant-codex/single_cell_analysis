@@ -1,46 +1,46 @@
-#%%
+import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from numpy.lib.function_base import append
-import scipy.io as spio
+import seaborn as sns
 from scipy.io import loadmat, savemat
-import importlib.util
-from sklearn import datasets, linear_model
 import matplotlib.pyplot as plt
 from scipy.sparse import data
-
-from plotnine import ggplot, geom_point, aes, stat_smooth, facet_wrap
-from plotnine.data import mtcars
-import pandas as pd
-import matplotlib as mpl
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-import pandas as pd
-
-from sklearn.decomposition import SparsePCA
-from sklearn.cluster import KMeans
-from sklearn import metrics
 from scipy.spatial.distance import cdist
 from matplotlib.ticker import NullFormatter
+from sklearn.cluster import KMeans
+from sklearn import datasets, linear_model
+from sklearn import metrics
+from sklearn.decomposition import SparsePCA
 from sklearn import manifold, datasets
 from sklearn.preprocessing import normalize
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-
 from math import isnan
 from utils import *
-from single_cell_analysis import *
+from analyze_single_cell import collect_drug_and_acsf
 from impedance import *
 
-#%%
 def remove_nan(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     ind = ~np.isnan(data)
     data_ = data[ind]
     return data_
 
-
 def rolling_avg(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     start = 0
     length = len(data)//10
     end = len(data)
@@ -60,8 +60,15 @@ def rolling_avg(data):
 
         return avg
 
-
 def get_Vm(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     Vm = []
     V = data['membrane_potential']
     thr = data['thresholds']
@@ -76,8 +83,15 @@ def get_Vm(data):
         Vm.append(V[int(i)+1:int(i)+50])
     return np.mean(Vm), Vm, np.mean(V)
 
-
 def get_dvdt(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     dvdt_p = []
     dvdt_n = []
 
@@ -93,45 +107,94 @@ def get_dvdt(data):
 
     return np.mean(dvdt_p), np.mean(dvdt_n)
 
-
 def sub_threhold_resistance(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     spikes = data['spikeindices']
     V = data['membrane_potential'][:spikes[0]]
     I = data['input_current'][:spikes[0]]
     R = np.mean(V/I)
     return R
 
-
 def get_thresholds(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     ind = ~np.isnan(data['thresholds'])
     return np.mean(data['thresholds'][ind])
 
-
 def get_isi(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     ind = ~np.isnan(data['thresholds'])
     return np.mean(np.diff(data['spikeindices'][ind]))
 
-
 def get_adaptation(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     ind = ~np.isnan(data['thresholds'])
     return np.mean(np.diff(data['thresholds'][ind]))
 
-
 def get_AP_peak(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     max_v = []
     for i in data:
         max_v.append(np.max(i))
     return np.mean(max_v)
 
-
 def get_AP_peak_adaptation(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     max_v = []
     for i in data:
         max_v.append(np.max(i))
     return np.mean(np.diff(max_v))
 
-
 def get_AP_width(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     thr_ind = data['thresholdindices']
     thr = data['thresholds']
     ind = ~np.isnan(thr_ind)
@@ -156,16 +219,37 @@ def get_AP_width(data):
             pass
     return np.mean(width)
 
-
 def hyperpolarized_value(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     return np.min(data['membrane_potential'])
 
-
 def first_spike(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     return data['thresholdindices'][0]
 
-
 def get_up_down_ratio(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     if len(data['Analysis']) > 1 and type(data['Analysis']) == list:
         avg_up = []
         avg_down = []
@@ -177,8 +261,17 @@ def get_up_down_ratio(data):
         avg_down = data['Analysis']['ndown']
     return np.nanmean(np.array(avg_up)/np.array(avg_down))
 
-
 def subthreshold(data, subthreshold=False, plot=False):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+        subthreshold (bool, optional): _description_. Defaults to False.
+        plot (bool, optional): _description_. Defaults to False.
+
+    Returns:
+        _type_: _description_
+    """
     V = data['membrane_potential']
     I = data['input_current']
     spikes = data['spikeindices']
@@ -214,9 +307,15 @@ def subthreshold(data, subthreshold=False, plot=False):
         zero_spikes = ~zero_spikes
     return np.mean(V_)
 
-
 def ISI_adaptation_index(data):
+    """_summary_
 
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     ind = ~np.isnan(data['thresholds'])
     ISI = np.diff(data['spikeindices'][ind])
     len_isi = len(ISI)
@@ -230,8 +329,15 @@ def ISI_adaptation_index(data):
         factors.append(avgs[j]/avgs[j+1])
     return (np.mean(factors))
 
-
 def threshold_adaptation_index(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     ind = ~np.isnan(data['thresholds'])
     thr = np.diff(data['thresholds'][ind])
     len_thr = len(thr)
@@ -245,8 +351,15 @@ def threshold_adaptation_index(data):
         factors.append(avgs[j]/avgs[j+1])
     return (np.mean(factors))
 
-
 def PSTH(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     V_zero = np.zeros_like(data['membrane_potential'])
     thr = data['thresholdindices']
     ind = ~np.isnan(thr)
@@ -266,17 +379,37 @@ def PSTH(data):
             start = start+width
     return np.mean(count_spk)
 
-
 def get_inst_fr(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     return np.mean(1/(np.diff(data['spikeindices'])))
 
-
 def get_firing_rate(data):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     return np.mean(data['firing_rate'])
 
-
 def spike_frequency_adaptation(data):
+    """_summary_
 
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     V_zero = np.zeros_like(data['membrane_potential'])
     thr = data['thresholdindices']
     ind = ~np.isnan(thr)
@@ -296,8 +429,15 @@ def spike_frequency_adaptation(data):
             start = start+width
     return np.mean(np.diff(count_spk))
 
-
 def get_impedence(data:list)->float:
+    """_summary_
+
+    Args:
+        data (list): _description_
+
+    Returns:
+        float: _description_
+    """
     I_acsf = data['input_current']
     V_acsf = data['membrane_potential']
     spk_acsf, V_acsf, I_acsf = return_stiched_spike_train(data)
@@ -440,21 +580,10 @@ def return_all_ephys_dict(cond:list, experimenter:str=None)->dict:
         print(i, data_i['input_generation_settings']['condition'])
         all_ephys_data_inh.append(get_ephys_vals(data_i))
 
-
-    # all_ephys_data_inh_acsf,all_ephys_data_inh,all_ephys_data_exc_acsf,all_ephys_data_exc = collect_drug_and_acsf(cond=['sag'],seperate_exc_inh=True)
-    
-    # all_ephys_data_exc = [get_ephys_vals(i) for i in all_ephys_data_exc]
-    # all_ephys_data_inh = [get_ephys_vals(i) for i in all_ephys_data_inh]
-    # all_ephys_data_exc_acsf = [get_ephys_vals(i) for i in all_ephys_data_exc_acsf]
-    # all_ephys_data_inh_acsf = [get_ephys_vals(i) for i in all_ephys_data_inh_acsf]
-    
     all_ephys_with_cond['exc'] = all_ephys_data_exc
     all_ephys_with_cond['inh'] = all_ephys_data_inh
     all_ephys_with_cond['exc_acsf'] = all_ephys_data_exc_acsf
     all_ephys_with_cond['inh_acsf'] = all_ephys_data_inh_acsf
     all_ephys_with_cond['cond'] = cond
     return all_ephys_with_cond
-#%%
 
-return_all_ephys_dict(cond=['sag'])
-# %%

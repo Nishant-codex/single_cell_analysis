@@ -27,4 +27,3 @@ with open('D:/analyzed_python/'+all_files[0].split('.')[0]+'.py', 'rb') as f:
 t2 = time.time()
 print(t2-t1)
 
-# %%

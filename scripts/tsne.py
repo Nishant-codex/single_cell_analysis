@@ -36,17 +36,17 @@ def plot_tsne(data_inh:dict,data_exc:dict):
     """
     scalar_inh_tsne = StandardScaler()
     scalar_exc_tsne = StandardScaler()
-    min_size = min(data_inh['all'].shape[0],data_exc['all'].shape[0])
+    min_size = min(data_inh.shape[0],data_exc.shape[0])
 
 
-    data_inh_tsne = scalar_inh_tsne.fit_transform(data_inh['all'])
+    data_inh_tsne = scalar_inh_tsne.fit_transform(data_inh)
     data_inh_tsne = normalize(data_inh_tsne)
-    # data_inh_tsne = data_inh['all']
+    # data_inh_tsne = data_inh
 
 
-    data_exc_tsne = scalar_exc_tsne.fit_transform(data_exc['all'])
+    data_exc_tsne = scalar_exc_tsne.fit_transform(data_exc)
     data_exc_tsne = normalize(data_exc_tsne)
-    # data_exc_tsne = data_exc['all']
+    # data_exc_tsne = data_exc
     data_inh_tsne = data_inh_tsne[:min_size,] 
 
     n_components = 2
@@ -87,9 +87,6 @@ def plot_tsne(data_inh:dict,data_exc:dict):
     reduced_data = tsne.fit_transform(np.array(data_exc_tsne))
            
     ax[p].scatter(reduced_data[:,0], reduced_data[:,1], c='blue', s=50, alpha=0.5,marker = 'o')
-    # ax[p].scatter(centroids[:, 0], centroids[:, 1],c='black', s=50,marker = 'x')
-    # ax[p].set_xlabel('PC1')
-    # ax[p].set_ylabel('PC2')
     ax[p].set_title('Excitatory p='+str(j))
     ax[p].get_xaxis().set_visible(False)
     ax[p].get_yaxis().set_visible(False)

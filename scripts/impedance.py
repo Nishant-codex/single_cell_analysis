@@ -5,9 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 
 import pandas as pd
-# from scipy import signal
-# from signal import fft
-# from scipy.signal import windows
+
 from utils import *
 from scipy import signal
 from scipy.fft import fft, fftshift
@@ -283,11 +281,4 @@ def plot_imp_condition(cond, exp_name=None, remove_spikes=True, plot=False, path
     return imp_exc, imp_inh, imp_exc_acsf, imp_inh_acsf
 
 
-# %%
-# data = loadmatInPy(
-#     'C:/Users/Nishant Joshi/Downloads/Old_code/repo/test_data/asli_1-18-7-19_E2_trial_1_analyzed.mat')
-# get_impedence(data[0])
-# plt.plot(get_impedence(data[0]))
-# plt.show()
-plot_imp_condition(['sag'])
 # %%

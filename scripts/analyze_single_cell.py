@@ -1,4 +1,3 @@
-# %%
 import os
 import sys 
 import pickle
@@ -19,8 +18,6 @@ import matplotlib.pyplot as plt
 import sys
 from utils import *
 
-
-#%%
 def separate_acsf_and_drug(data_list:list) -> list:
 	"""seperates and returns acsf trials from the drug trials in the cell object
 
@@ -95,8 +92,3 @@ def collect_drug_and_acsf(path_files:str, condition:list,seperate_exc_inh:bool=F
 				drug_all.append(drug_i)
 		return [acsf_all, drug_all]
 
-
-# %%
-# acsf_inh,drug_inh,acsf_exc,drug_exc = collect_drug_and_acsf(path_files ='C:/Users/Nishant Joshi/Google Drive/Analyzed/' ,condition= ['sag'],seperate_exc_inh=True)
-
-# %%

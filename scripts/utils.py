@@ -93,7 +93,6 @@ def loadmatInPy(filename:str)->dict:
 		return dict        
 
 	def _todict(matobj):
-		
 		'''
 		A recursive function which constructs nested dictionaries from matobjects
 		'''
@@ -106,14 +105,10 @@ def loadmatInPy(filename:str)->dict:
 				elif strg =='Analysis':
 					temp = []
 					for i in elem:
-
 						temp.append(_todict(i))
 					dict['Analysis'] = temp
 				else:
-					if isinstance(elem,np.ndarray):
-						dict[strg] = elem.tolist()
-					else:
-						dict[strg] = elem
+					dict[strg] = elem
 		except:
 			for strg in matobj.keys():
 				elem = matobj[strg]
@@ -125,10 +120,7 @@ def loadmatInPy(filename:str)->dict:
 						temp.append(_todict(i))
 					dict['Analysis'] = temp
 				else:
-					if isinstance(elem,np.ndarray):
-						dict[strg] = elem.tolist()
-					else:
-						dict[strg] = elem
+					dict[strg] = elem
 		return dict
 	
 	if ('analyzed' in filename )and ('_CC_' not in filename):
