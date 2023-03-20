@@ -133,7 +133,7 @@ def returnVsandIs(path_cc: str, filename: str)->dict:
     return return_dict
 
 
-def plot_steps(string):
+def plot_steps(path_cc,filename):
     def order_list(data):
         if data[0][-3] == '0':
             temp_list = data[2:]
@@ -141,7 +141,7 @@ def plot_steps(string):
             return temp_list+rear_vals
         else:
             return data
-    data = loadmat(path_cc+string)
+    data = loadmat(path_cc+filename)
     keys = data.keys()
     keys = list(keys)[3:]
     dt = 1/20000
@@ -301,7 +301,7 @@ def check_for_faultycell(val_dict, name, exceptions=None):
         return True
 
 
-def collect_all_spike_data(condition):
+def collect_all_spike_data(path_cc, df_CC_exp , condition):
     """_summary_
 
     Args:
@@ -331,7 +331,7 @@ def collect_all_spike_data(condition):
         print(drug_file)
         I_means_drug = []
         spikes_and_thrs_drug = []
-        value_dict_drug = returnVsandIs(drug_file)
+        value_dict_drug = returnVsandIs(path_cc , drug_file)
         if check_for_faultycell(value_dict_drug, drug_file):
             print('faulty')
             pass
@@ -371,7 +371,7 @@ def collect_all_spike_data(condition):
         I_means_acsf = []
         spikes_and_thrs_acsf = []
 
-        value_dict_acsf = returnVsandIs(acsf_file)
+        value_dict_acsf = returnVsandIs(path_cc, acsf_file)
         if check_for_faultycell(value_dict_acsf, acsf_file):
             pass
         else:

@@ -40,12 +40,12 @@ def plot_tsne(data_inh:dict,data_exc:dict):
 
 
     data_inh_tsne = scalar_inh_tsne.fit_transform(data_inh)
-    data_inh_tsne = normalize(data_inh_tsne)
+    # data_inh_tsne = normalize(data_inh_tsne)
     # data_inh_tsne = data_inh
 
 
     data_exc_tsne = scalar_exc_tsne.fit_transform(data_exc)
-    data_exc_tsne = normalize(data_exc_tsne)
+    # data_exc_tsne = normalize(data_exc_tsne)
     # data_exc_tsne = data_exc
     data_inh_tsne = data_inh_tsne[:min_size,] 
 
@@ -62,18 +62,18 @@ def plot_tsne(data_inh:dict,data_exc:dict):
             learning_rate="auto",
             n_iter=1000,)
 
-    reduced_data = tsne.fit_transform(np.array(data_inh_tsne))
-    ax[p].scatter(reduced_data[:,0], reduced_data[:,1], c='blue', s=50, alpha=0.5,marker = 'o')
-    ax[p].set_title('Inhibitory p='+str(j))
-    ax[p].get_xaxis().set_visible(False)
-    ax[p].get_yaxis().set_visible(False)    
-    plt.show()
+        reduced_data = tsne.fit_transform(np.array(data_inh_tsne))
+        ax[p].scatter(reduced_data[:,0], reduced_data[:,1], c='blue', s=50, alpha=0.5,marker = 'o')
+        ax[p].set_title('Inhibitory p='+str(j))
+        ax[p].get_xaxis().set_visible(False)
+        ax[p].get_yaxis().set_visible(False)    
+        plt.show()
 
-    data_exc_tsne = data_exc_tsne[:min_size,] 
+        data_exc_tsne = data_exc_tsne[:min_size,] 
 
-    n_components = 2
-    perplexity_ = np.arange(5,100,10)
-    fig, ax = plt.subplots(1,len(perplexity_),figsize=[40,4])
+        n_components = 2
+        perplexity_ = np.arange(5,100,10)
+        fig, ax = plt.subplots(1,len(perplexity_),figsize=[40,4])
 
     for p,j in enumerate(perplexity_):
         tsne = manifold.TSNE(
@@ -84,13 +84,13 @@ def plot_tsne(data_inh:dict,data_exc:dict):
             learning_rate="auto",
             n_iter=400,)
 
-    reduced_data = tsne.fit_transform(np.array(data_exc_tsne))
-           
-    ax[p].scatter(reduced_data[:,0], reduced_data[:,1], c='blue', s=50, alpha=0.5,marker = 'o')
-    ax[p].set_title('Excitatory p='+str(j))
-    ax[p].get_xaxis().set_visible(False)
-    ax[p].get_yaxis().set_visible(False)
-    plt.show()  
+        reduced_data = tsne.fit_transform(np.array(data_exc_tsne))
+            
+        ax[p].scatter(reduced_data[:,0], reduced_data[:,1], c='blue', s=50, alpha=0.5,marker = 'o')
+        ax[p].set_title('Excitatory p='+str(j))
+        ax[p].get_xaxis().set_visible(False)
+        ax[p].get_yaxis().set_visible(False)
+        plt.show()  
 
 
 def plot_tsne_oneoff(data_inh:dict,data_exc:dict):
