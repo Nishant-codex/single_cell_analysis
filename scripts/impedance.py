@@ -1,4 +1,4 @@
-# %%
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -11,7 +11,6 @@ from scipy import signal
 from scipy.fft import fft, fftshift
 import matplotlib.pyplot as plt
 import numpy.matlib
-# %%
 
 
 def makespectrumt(trace, timelen, adcrate):
@@ -281,4 +280,3 @@ def plot_imp_condition(cond, exp_name=None, remove_spikes=True, plot=False, path
     return imp_exc, imp_inh, imp_exc_acsf, imp_inh_acsf
 
 
-# %%
