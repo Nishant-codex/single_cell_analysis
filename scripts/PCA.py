@@ -1,3 +1,4 @@
+#%%
 import pickle
 from typing import Set
 import numpy as np 
@@ -19,7 +20,7 @@ from matplotlib.ticker import NullFormatter
 from sklearn import manifold, datasets
 from sklearn.decomposition import PCA,IncrementalPCA,SparsePCA
 from sklearn.preprocessing import StandardScaler, normalize
-
+#%%
 def remove_nans_and_infs(data:list):
     """_summary_
 
@@ -91,7 +92,7 @@ def shuffle_prams(data,col,all=False):
     data_o[:,col]  = col_shuffled
     return data_o  
 
-def plot_pca(data:dict):
+def plot_pca(data_inh,data_exc,plot_loadings=False,feature_sub=None ):
     """_summary_
 
     Args:
@@ -100,20 +101,21 @@ def plot_pca(data:dict):
     features = ['Vm_avg','dvdt_p','dvdt_n','resistance','thr','adaptation',
     'isi','peak','peak_adaptation','ap_width','hyp_value','fist_spike','up_down_ratio',
     'isi_adaptation','thr_adp_ind','psth','int_fr','fr','sub_thr','spk_fr_adp','imp']
+    if feature_sub !=None:
+        features = np.array(features)[feature_sub]
 
-    min_size = min(np.array(data['inh']).shape[0],np.array(data['exc']).shape[0])
+    print(np.array(data_inh).shape)
+    min_size = min(np.array(data_inh).shape[0],np.array(data_exc).shape[0])
 
     scalar_inh = StandardScaler()
     scalar_exc = StandardScaler()
-    data_inh_pca = scalar_inh.fit_transform(remove_nans_and_infs(np.squeeze(data['inh'])))
+    data_inh_pca = scalar_inh.fit_transform(remove_nans_and_infs(np.squeeze(data_inh)))
     data_inh_pca = normalize(data_inh_pca) 
-    print('herer')
-    data_exc_pca = scalar_exc.fit_transform(remove_nans_and_infs(np.squeeze(data['exc'])))
+    data_exc_pca = scalar_exc.fit_transform(remove_nans_and_infs(np.squeeze(data_exc)))
     data_exc_pca = normalize(data_exc_pca) 
 
     pca_x = PCA(whiten=True,random_state=40)
 
-    fig, ax = plt.subplots(1,3,figsize=[24,8])
 
     # Project the data in 2D
 
@@ -127,21 +129,28 @@ def plot_pca(data:dict):
     centroids_inh = kmeans.cluster_centers_
     label = kmeans.labels_.astype(float)
 
-    ax[0].scatter(reduced_data_inh[:,0], reduced_data_inh[:,1], c=label, s=50, alpha=0.5,marker = 'o')
-    ax[0].scatter(centroids_inh[:, 0], centroids_inh[:, 1],c='black', s=50,marker = 'x')
-    ax[0].set_xlabel('PC1')
-    ax[0].set_ylabel('PC2')
-    ax[0].set_title('Inhibitory')
 
-    for i, feature in enumerate(features):
-    # if (abs(loadings[i, 0])+abs(loadings[i, 1]))>0.5:
-        ax[1].plot([0,loadings[i, 0]],[0,loadings[i, 1]])
-        ax[1].annotate(feature, xy = [loadings[i, 0], loadings[i, 1]])
-    ax[2].scatter(np.arange(len(exp_var_inh)),exp_var_inh)
+    if plot_loadings:
+        fig, ax = plt.subplots(1,3,figsize=[24,8])
 
+        ax[0].scatter(reduced_data_inh[:,0], reduced_data_inh[:,1], c=label, s=50, alpha=0.5,marker = 'o')
+        ax[0].scatter(centroids_inh[:, 0], centroids_inh[:, 1],c='black', s=50,marker = 'x')
+        ax[0].set_xlabel('PC1')
+        ax[0].set_ylabel('PC2')
+        ax[0].set_title('Inhibitory')        
+        for i, feature in enumerate(features):
+            ax[1].plot([0,loadings[i, 0]],[0,loadings[i, 1]])
+            ax[1].annotate(feature, xy = [loadings[i, 0], loadings[i, 1]])
+        ax[2].scatter(np.arange(len(exp_var_inh)),exp_var_inh)
+    else:
+        plt.scatter(reduced_data_inh[:,0], reduced_data_inh[:,1], c=label, s=50, alpha=0.5,marker = 'o')
+        plt.scatter(centroids_inh[:, 0], centroids_inh[:, 1],c='black', s=50,marker = 'x')
+        plt.xlabel('PC1')
+        plt.ylabel('PC2')
+        plt.title('Inhibitory')           
     plt.show()
 
-    fig, ax = plt.subplots(1,3,figsize=[24,8])
+   
 
     pca_x_exc = PCA(whiten=True,random_state=40)
     # Project the data in 2D
@@ -155,21 +164,66 @@ def plot_pca(data:dict):
     centroids_exc = kmeans.cluster_centers_
     label = kmeans.labels_.astype(float)
 
-    ax[0].Projection ='3d'                   
-    ax[0].scatter(reduced_data_exc[:,0], reduced_data_exc[:,1], c=label, s=50, alpha=0.5,marker = 'o')
-    ax[0].scatter(centroids_exc[:, 0], centroids_exc[:, 1],c='black', s=50,marker = 'x')
-    ax[0].set_xlabel('PC1')
-    ax[0].set_ylabel('PC2')
-    ax[0].set_title('Excitatory')
 
-    for i, feature in enumerate(features):
-    # if (abs(loadings[i, 0])+abs(loadings[i, 1]))>0.4:
-        ax[1].plot([0,loadings[i, 0]],[0,loadings[i, 1]])
-        ax[1].annotate(feature, xy = [loadings[i, 0], loadings[i, 1]])
+    if plot_loadings:
+        fig, ax = plt.subplots(1,3,figsize=[24,8])
+        ax[0].Projection ='3d'                   
+        ax[0].scatter(reduced_data_exc[:,0], reduced_data_exc[:,1], c=label, s=50, alpha=0.5,marker = 'o')
+        ax[0].scatter(centroids_exc[:, 0], centroids_exc[:, 1],c='black', s=50,marker = 'x')
+        ax[0].set_xlabel('PC1')
+        ax[0].set_ylabel('PC2')
+        ax[0].set_title('Excitatory')
 
-
-    ax[2].scatter(np.arange(len(exp_var_exc)),exp_var_exc)
+        for i, feature in enumerate(features):
+            ax[1].plot([0,loadings[i, 0]],[0,loadings[i, 1]])
+            ax[1].annotate(feature, xy = [loadings[i, 0], loadings[i, 1]])
+        ax[2].scatter(np.arange(len(exp_var_exc)),exp_var_exc)
+    else:
+        plt.Projection ='3d'                   
+        plt.scatter(reduced_data_exc[:,0], reduced_data_exc[:,1], c=label, s=50, alpha=0.5,marker = 'o')
+        plt.scatter(centroids_exc[:, 0], centroids_exc[:, 1],c='black', s=50,marker = 'x')
+        plt.xlabel('PC1')
+        plt.ylabel('PC2')
+        plt.title('Excitatory')
     plt.show()
+
+def plot_pca_multiple_conditions(data,ax,plot_loadings=False,c='blue',type_c=None):
+    """_summary_
+
+    Args:
+        data (list): _description_
+    """
+    features = ['Vm_avg','dvdt_p','dvdt_n','resistance','thr','adaptation',
+    'isi','peak','peak_adaptation','ap_width','hyp_value','fist_spike','up_down_ratio',
+    'isi_adaptation','thr_adp_ind','psth','int_fr','fr','sub_thr','spk_fr_adp','imp']
+    print(np.array(data).shape)
+
+    scalar_inh = StandardScaler()
+    scalar_exc = StandardScaler()
+    data_inh_pca = scalar_inh.fit_transform(remove_nans_and_infs(np.squeeze(data)))
+    data_inh_pca = normalize(data_inh_pca) 
+
+
+    pca_x = PCA(whiten=True,random_state=40)
+
+
+    # Project the data in 2D
+
+    reduced_data_inh = pca_x.fit_transform(data_inh_pca)
+    exp_var_inh = pca_x.explained_variance_ratio_
+    loadings = pca_x.components_.T * np.sqrt(pca_x.explained_variance_)
+
+    n_components = 3
+
+    kmeans = KMeans(n_clusters=5).fit(reduced_data_inh)
+    centroids_inh = kmeans.cluster_centers_
+    label = kmeans.labels_.astype(float)
+
+
+    ax.scatter(reduced_data_inh[:,0], reduced_data_inh[:,1], c=c, s=50, alpha=0.5,marker = 'o')
+    ax.set_xlabel('PC1')
+    ax.set_ylabel('PC2')
+    ax.set_title(type_c)           
 
 def plot_pca_with_loadings(data:dict,features:list):
     """_summary_
@@ -297,3 +351,48 @@ def plot_PCA_oneoff(data_inh,data_exc):
     ax.set_ylabel('PC2')
     ax.set_title('Excitatory w/ '+features[m])
     plt.show()
+#%%
+# data_d2 = pickle.load(open('G:/My Drive/all_ephys_d2.p','rb'))
+# data_d1 = pickle.load(open('G:/My Drive/all_ephys_d1.p','rb'))
+# data_sag = pickle.load(open('G:/My Drive/all_ephys_sag.p','rb'))
+# data_acsf_exc = pickle.load(open('G:/My Drive/all_ephys_exc_NC_acsf_imp.p','rb'))
+# data_acsf_inh = pickle.load(open('G:/My Drive/all_ephys_inh_NC_acsf_imp.p','rb'))
+# ind_feat = [0,3,4,6,9,17,20]
+# fig, ax_inh = plt.subplots(1,1,figsize=[10,8])
+
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_d2['inh']))),ax_inh,c='red',type_c='Inhibitory')
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_sag['inh']))),ax_inh,c='blue',type_c='Inhibitory')
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_d1['inh']))),ax_inh,c='orange',type_c='Inhibitory')
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_d1['inh_acsf']))),ax_inh,c='green',type_c='Inhibitory')
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_d1['inh_acsf']))),ax_inh,c='green',type_c='Inhibitory')
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_d1['inh_acsf']))),ax_inh,c='green',type_c='Inhibitory')
+
+# plt.legend(['D2','sag','D1','acsf'])
+
+# plt.show()
+
+# fig, ax_exc = plt.subplots(1,1,figsize=[10,8])
+
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_d2['exc'])))[:,ind_feat],ax_exc,c='red',type_c='Excitatory')
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_sag['exc'])))[:,ind_feat],ax_exc,c='blue',type_c='Excitatory')
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_d1['exc'])))[:,ind_feat],ax_exc,c='orange',type_c='Excitatory')
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_d1['exc_acsf']))),ax_exc,c='green',type_c='Excitatory')
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_d1['exc_acsf']))),ax_exc,c='green',type_c='Excitatory')
+# plot_pca_multiple_conditions(remove_nans_and_infs(np.squeeze(np.array(data_d1['exc_acsf']))),ax_exc,c='green',type_c='Excitatory')
+
+# plt.legend(['D2','sag','D1','acsf'])
+
+# plt.show()
+
+# %%
+# data_d2 = pickle.load(open('G:/My Drive/all_ephys_d2.p','rb'))
+# data_d1 = pickle.load(open('G:/My Drive/all_ephys_d1.p','rb'))
+# data_sag = pickle.load(open('G:/My Drive/all_ephys_sag.p','rb'))
+# data_acsf_exc = pickle.load(open('G:/My Drive/all_ephys_exc_NC_acsf_imp.p','rb'))
+# data_acsf_inh = pickle.load(open('G:/My Drive/all_ephys_inh_NC_acsf_imp.p','rb'))
+# ind_feat = [0,3,4,6,9,17,20]
+# plot_pca(data_acsf_inh['all'],data_acsf_exc['all'],plot_loadings=True)
+# print(data_acsf_inh['all'][:,ind_feat].shape)
+# print(data_acsf_exc['all'][:,ind_feat].shape)
+
+# %%

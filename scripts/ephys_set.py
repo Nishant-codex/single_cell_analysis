@@ -476,16 +476,16 @@ def get_ephys_vals(data_i):
     spk_fr_adp = spike_frequency_adaptation(data_i)
     imp = get_impedence(data_i)
 
-    ephys_data =      [Vm_avg,
+    ephys_data =      [Vm_avg, #
                         dvdt_p,
                         dvdt_n,
-                        resistance,
-                        thr,
-                        adaptation,
-                        isi,
+                        resistance, #
+                        thr,#
+                        adaptation,#
+                        isi,#
                         peak,
                         peak_adaptation,
-                        ap_width,
+                        ap_width, #
                         hyp_value,
                         fist_spike,
                         up_down_ratio,
@@ -493,10 +493,10 @@ def get_ephys_vals(data_i):
                         thr_adp_ind,
                         psth,
                         int_fr,
-                        fr,
+                        fr, #
                         sub_thr,
                         spk_fr_adp,
-                        imp]
+                        imp] #
 
     return ephys_data
 
