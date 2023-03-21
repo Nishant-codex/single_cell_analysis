@@ -27,13 +27,23 @@ from pylab import *
 from scipy.signal import find_peaks
 
 
-def plot_single_cell(path_cc: str, filename: str):
+def plot_single_cell(path_cc: str, filename: str,plottype=None):
     """ to plot single CC cell, voltage and input current side by side 
 
     Args:
         path_cc (str): path to all CC files 
         filename (str): name of the file to be plotted 
     """
+    if plottype==None:
+        raise('Invalid value, it should be \'stacked\' or \'expanded\'')
+
+    elif plottype == 'stacked':
+        stacked=True
+        expand = False
+
+    elif plottype == 'expanded':
+        stacked= False
+        expand = True
 
     def order_list(data:list)->list:
         """ somtimes the list of keys are ordered such that the last value is at the beginning. This function sorts it. 
@@ -76,18 +86,23 @@ def plot_single_cell(path_cc: str, filename: str):
 
                 Vs.append(data[step][:, 1])
                 tV.append(data[step][:, 0])
+                if stacked:
+                    ax[0].plot(data[step][:, 0],data[step][:, 1])
             elif step[-1] == '1':
                 I = data[step][:, 1]
                 Is.append(data[step][:, 1])
                 tI.append(data[step][:, 0])
-    V = Vs
-    # spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(np.array(V).flatten(),axis=1),dt=dt,searchthreshold = searchthreshold,windown = nwindow,refractory_period = refractory_period,derthreshold =derthreshold )
-    ax[0].plot(np.array(V).flatten())
-    # V = np.array(V).flatten()
-    # ax[0].plot(spk_ind,V[spk_ind],'x', markersize=12)
-    # ax[0].plot(thr_ind,V[thr_ind],'o', markersize=4)
-    ax[1].plot(np.array(Is).flatten())
-    plt.show()
+                if stacked:
+                    ax[1].plot(data[step][:, 0],data[step][:, 1])
+        if expand:
+            V = Vs
+            # spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(np.array(V).flatten(),axis=1),dt=dt,searchthreshold = searchthreshold,windown = nwindow,refractory_period = refractory_period,derthreshold =derthreshold )
+            ax[0].plot(np.array(V).flatten())
+            # V = np.array(V).flatten()
+            # ax[0].plot(spk_ind,V[spk_ind],'x', markersize=12)
+            # ax[0].plot(thr_ind,V[thr_ind],'o', markersize=4)
+            ax[1].plot(np.array(Is).flatten())
+            plt.show()
 
 
 def returnVsandIs(path_cc: str, filename: str)->dict:
