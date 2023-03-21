@@ -188,8 +188,7 @@ def plot_steps(path_cc,filename):
                 Is.append(data[step][:, 1])
                 tI.append(data[step][:, 0])
         V = Vs
-        spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(np.array(V).flatten(
-        ), axis=1), dt=dt, searchthreshold=searchthreshold, windown=nwindow, refractory_period=refractory_period, derthreshold=derthreshold)
+        spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(np.array(V).flatten(), axis=1), dt=dt, searchthreshold=searchthreshold, windown=nwindow, refractory_period=refractory_period, derthreshold=derthreshold)
         ax[0].plot(np.array(V).flatten())
         V = np.array(V).flatten()
         ax[0].plot(spk_ind, V[spk_ind], 'x', markersize=12)
@@ -417,6 +416,50 @@ def collect_all_spike_data(path_cc, df_CC_exp , condition):
             files_with_spks_and_thresholds_acsf.append(
                 {'avg_I': I_means_acsf, 'spike_info': spikes_and_thrs_acsf, 'filename': acsf_file})
     return [files_with_spks_and_thresholds_drug, files_with_spks_and_thresholds_acsf]
+
+
+
+def collect_singlecell_spike_data(path_cc, filename ):
+    """_summary_
+
+    Args:
+        condition (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    dt = 1/20000
+    searchthreshold = 0
+    thresholdwindow = [1, 0.25]
+    refractory_period = 3
+    derthreshold = [[1, 0.000008], [2, 0.000008]]
+    # nwindow = [np.round(thresholdwindow[0]*dt), np.round(thresholdwindow[1]/dt)]
+    nwindow = [30, 70]
+    drug_file =filename
+    # print(len(file_cond),len(file_cond_acsf))
+    files_with_spks_and_thresholds_drug = []
+    files_with_spks_and_thresholds_acsf = []
+    # print(file_cond_acsf)
+    spikes_and_thrs_drug = []
+    value_dict_drug = returnVsandIs(path_cc , drug_file)
+    if check_for_faultycell(value_dict_drug, drug_file):
+        print('faulty')
+        pass
+    else:
+        try:
+
+            for trial, vals in value_dict_drug.items():
+                spikes_and_thrs_trials = []
+                for steps in vals['V']:
+                    V = steps
+                    spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(
+                        V, axis=1), dt=dt, searchthreshold=searchthreshold, windown=nwindow, refractory_period=refractory_period, derthreshold=derthreshold)
+                    spikes_and_thrs_trials =  {'spks': spk_ind,'thrs': thr,'thr_ind': thr_ind}
+                    spikes_and_thrs_drug.append(spikes_and_thrs_trials)
+            return spikes_and_thrs_drug
+        except:
+            print('problem with '+drug_file)
+
 
 
 def return_name_date_exp_fn(string):
