@@ -187,15 +187,15 @@ def plot_steps(path_cc,filename):
                 I = data[step][:, 1]
                 Is.append(data[step][:, 1])
                 tI.append(data[step][:, 0])
-    V = Vs
-    spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(np.array(V).flatten(
-    ), axis=1), dt=dt, searchthreshold=searchthreshold, windown=nwindow, refractory_period=refractory_period, derthreshold=derthreshold)
-    ax[0].plot(np.array(V).flatten())
-    V = np.array(V).flatten()
-    ax[0].plot(spk_ind, V[spk_ind], 'x', markersize=12)
-    ax[0].plot(thr_ind, V[thr_ind], 'o', markersize=4)
-    ax[1].plot(np.array(Is).flatten())
-    plt.show()
+        V = Vs
+        spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(np.array(V).flatten(
+        ), axis=1), dt=dt, searchthreshold=searchthreshold, windown=nwindow, refractory_period=refractory_period, derthreshold=derthreshold)
+        ax[0].plot(np.array(V).flatten())
+        V = np.array(V).flatten()
+        ax[0].plot(spk_ind, V[spk_ind], 'x', markersize=12)
+        ax[0].plot(thr_ind, V[thr_ind], 'o', markersize=4)
+        ax[1].plot(np.array(Is).flatten())
+        plt.show()
 
     return_dict[str(ind_trial+1)] = {'V': Vs, 'I': Is, 'tV': tV, 'tI': tI}
 
