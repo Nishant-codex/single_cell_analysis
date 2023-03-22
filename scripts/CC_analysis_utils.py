@@ -347,7 +347,8 @@ def collect_all_spike_data(path_cc, df_CC_exp , condition):
         spikes_and_thrs_drug = []
         value_dict_drug = returnVsandIs(path_cc , drug_file)
         if check_for_faultycell(value_dict_drug, drug_file):
-            return 'faulty'
+            print('faulty')
+            pass
         else:
             if len(value_dict_drug.keys()) == 1:
                 for i in value_dict_drug['1']['I']:
@@ -442,8 +443,8 @@ def collect_singlecell_spike_data(path_cc, filename ):
     spikes_and_thrs_drug = []
     value_dict_drug = returnVsandIs(path_cc , drug_file)
     if check_for_faultycell(value_dict_drug, drug_file):
-        print('faulty')
-        pass
+        return 'faulty'
+
     else:
         try:
 
