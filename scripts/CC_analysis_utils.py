@@ -1,3 +1,4 @@
+
 import os
 import pickle
 from typing import Set
@@ -83,7 +84,6 @@ def plot_single_cell(path_cc: str, filename: str,plottype=None):
         fig, ax = plt.subplots(1, 2, figsize=[20, 10])
         for index, step in enumerate(trial):
             if step[-1] == '2':
-
                 Vs.append(data[step][:, 1])
                 tV.append(data[step][:, 0])
                 if stacked:
@@ -180,7 +180,6 @@ def plot_steps(path_cc,filename):
         fig, ax = plt.subplots(1, 2, figsize=[20, 10])
         for index, step in enumerate(trial):
             if step[-1] == '2':
-
                 Vs.append(data[step][:, 1])
                 tV.append(data[step][:, 0])
             elif step[-1] == '1':
@@ -360,7 +359,6 @@ def collect_all_spike_data(path_cc, df_CC_exp , condition):
                         tempI.append(np.mean(j))
                     I_means_drug.append(tempI)
             try:
-
                 for trial, vals in value_dict_drug.items():
                     spikes_and_thrs_trials = []
                     for steps in vals['V']:
@@ -377,8 +375,6 @@ def collect_all_spike_data(path_cc, df_CC_exp , condition):
                     spikes_and_thrs_drug.append(spikes_and_thrs_trials)
             except:
                 print('problem with '+drug_file)
-
-                # spikes_and_thrs_drug.append({})
             files_with_spks_and_thresholds_drug.append(
                 {'avg_I': I_means_drug, 'spike_info': spikes_and_thrs_drug, 'filename': drug_file})
 
@@ -444,22 +440,21 @@ def collect_singlecell_spike_data(path_cc, filename ):
     value_dict_drug = returnVsandIs(path_cc , drug_file)
     if check_for_faultycell(value_dict_drug, drug_file):
         return 'faulty'
-
     else:
         try:
-
             for trial, vals in value_dict_drug.items():
                 spikes_and_thrs_trials = []
                 for steps in vals['V']:
                     V = steps
                     spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(
                         V, axis=1), dt=dt, searchthreshold=searchthreshold, windown=nwindow, refractory_period=refractory_period, derthreshold=derthreshold)
-                    spikes_and_thrs_trials =  {'spks': spk_ind,'thrs': thr,'thr_ind': thr_ind}
-                    spikes_and_thrs_drug.append(spikes_and_thrs_trials)
+                    
+                    spikes_and_thrs_trials.append({'spks': spk_ind.flatten(),'thrs': thr.flatten(),'thr_ind': thr_ind.flatten()})
+                spikes_and_thrs_drug.append(spikes_and_thrs_trials)
             return spikes_and_thrs_drug
         except:
             print('problem with '+drug_file)
-
+            return 'faulty'
 
 
 def return_name_date_exp_fn(string):
@@ -502,3 +497,4 @@ def return_name_date_exp_fn(string):
             day = day[1]
         date = day+month+year
         return name+'_'+date+'_'+exp
+
