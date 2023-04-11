@@ -26,13 +26,11 @@ from matplotlib.ticker import NullFormatter
 from sklearn import manifold, datasets
 from analyze_single_cell import collect_drug_and_acsf
 from ephys_set import return_all_ephys_dict
-# import umap
 import pickle
 from PCA import * 
-# umap.UMAP()
 import umap.umap_ as umap
 
-def plot_UMAP(data_inh,data_exc,c_exc,c_inh,neighbours,distance,legend):
+def plot_UMAP(data_inh,data_exc,c_exc,c_inh,neighbours,distance,condition_inh,condition_exc,figsize=None):
     """plots UMAP for excitatory and inhibitory cells 
 
     Args:
@@ -51,25 +49,24 @@ def plot_UMAP(data_inh,data_exc,c_exc,c_inh,neighbours,distance,legend):
     # min_size = min(data_exc_umap.shape[0],data_inh_umap.shape[0])
     # kmeans_labels_inh = cluster.KMeans(n_clusters=5).fit_predict(data_inh_umap[:min_size,])
     # kmeans_labels_exc = cluster.KMeans(n_clusters=5).fit_predict(data_exc_umap[:min_size,])
-    fig = plt.figure(figsize=[18,8])
-    ax1 = fig.add_subplot(1,2,1,projection='3d')
+    fig = plt.figure(figsize=figsize)
+    # ax1 = fig.add_subplot(1,2,1,projection='3d')
     ax12d = fig.add_subplot(1,2,2)
     neighbours = neighbours
     dist = distance
-    clusterable_embedding3d = umap.UMAP(n_neighbors=neighbours,min_dist=dist,
-        n_components=3,random_state=42,).fit_transform(data_exc_umap)
+    # clusterable_embedding3d = umap.UMAP(n_neighbors=neighbours,min_dist=dist,
+    #     n_components=3,random_state=42,).fit_transform(data_exc_umap)
     clusterable_embedding2d = umap.UMAP(n_neighbors=neighbours,min_dist=dist,
         n_components=2,random_state=42,).fit_transform(data_exc_umap)
-
-    ax1.scatter(clusterable_embedding3d[:, 0], clusterable_embedding3d[:, 1], clusterable_embedding3d[:, 2], c= c_exc, cmap='gist_rainbow')
-    ax1.set_title('UMAP clusters for excitatory neurons')
-    ax12d.scatter(clusterable_embedding2d[:, 0], clusterable_embedding2d[:, 1], c= c_exc, cmap='gist_rainbow')
+    df_2d = {'Dim1':clusterable_embedding2d[:, 0],
+             'Dim2':clusterable_embedding2d[:, 1],
+             'condition':condition_exc}
+    sns.scatterplot(data=df_2d,x='Dim1',y='Dim2',hue='condition',  cmap='gist_rainbow',ax=ax12d)
     ax12d.set_title('UMAP clusters for excitatory neurons 2D')
-    plt.legend(legend)
     plt.show()
 
-    fig = plt.figure(figsize=[18,8])
-    ax2 = fig.add_subplot(1,2,1,projection='3d')
+    fig = plt.figure(figsize=figsize)
+    # ax2 = fig.add_subplot(1,2,1,projection='3d')
     ax22d = fig.add_subplot(1,2,2)
     
     clusterable_embedding3d = umap.UMAP(n_neighbors=neighbours, min_dist=dist,
@@ -77,12 +74,18 @@ def plot_UMAP(data_inh,data_exc,c_exc,c_inh,neighbours,distance,legend):
 
     clusterable_embedding2d = umap.UMAP(n_neighbors=neighbours, min_dist=dist,
                                         n_components=2,random_state=42).fit_transform(data_inh_umap)
+    df_2d = {'Dim1':clusterable_embedding2d[:, 0],
+             'Dim2':clusterable_embedding2d[:, 1],
+             'condition':condition_inh}
 
-    ax2.scatter(clusterable_embedding3d[:, 0], clusterable_embedding3d[:, 1], clusterable_embedding3d[:, 2],c=c_inh,  cmap='gist_rainbow')
-    ax2.set_title('UMAP clusters for inhibitory neurons 3D')
-    ax22d.scatter(clusterable_embedding2d[:, 0], clusterable_embedding2d[:, 1],c= c_inh,  cmap='gist_rainbow')
+
+    # sns.scatterplot(data=df_3d,x='Dim1',y='Dim2',hue='condition',  cmap='gist_rainbow',ax=ax22d)
+
+    # ax2.scatter(clusterable_embedding3d[:, 0], clusterable_embedding3d[:, 1], clusterable_embedding3d[:, 2],c=c_inh,  cmap='gist_rainbow')
+    # ax2.set_title('UMAP clusters for inhibitory neurons 3D')
+    sns.scatterplot(data=df_2d,x='Dim1',y='Dim2',hue='condition',  cmap='gist_rainbow',ax=ax22d)
     ax22d.set_title('UMAP clusters for inhibitory neurons 2D')
-    plt.legend(legend)
+
 
     plt.show()
 
