@@ -1,4 +1,3 @@
-#%%
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -587,7 +586,3 @@ def return_all_ephys_dict(cond:list, experimenter:str=None)->dict:
     all_ephys_with_cond['inh_acsf'] = all_ephys_data_inh_acsf
     all_ephys_with_cond['cond'] = cond
     return all_ephys_with_cond
-
-
-# %%
-data  = return_all_ephys_dict(['aCSF','acsf'])
