@@ -50,6 +50,8 @@ def join_conditions(path:str = None, list_cond:list = None,exc_inh_sep:bool = Fa
 	table = pd.read_csv(path)
 	cond= np.sort(np.unique(table['condition']))
 	temp = []
+	if list_cond==None:
+		list_cond = cond
 	
 	if len(list_cond)>1:
 		for i in list_cond:
