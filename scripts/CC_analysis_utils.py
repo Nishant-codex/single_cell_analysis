@@ -414,7 +414,6 @@ def collect_all_spike_data(path_cc, df_CC_exp , condition):
     return [files_with_spks_and_thresholds_drug, files_with_spks_and_thresholds_acsf]
 
 
-
 def collect_singlecell_spike_data(path_cc, filename ):
     """_summary_
 
