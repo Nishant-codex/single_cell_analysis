@@ -1,79 +1,83 @@
->hidden_state
->input_current
->input_generation_settings
-  |-->baseline
-  |-->amplitude_scaling
-  |-->tau
-  |-->mean_firing_rate
-  |-->sampling_rate
-  |-->duration
-  |-->FLAG_convert_to_amphere
-  |-->condition
-  |-->experimentname
-  |-->experimentername
-  |-->experimentnr
-  |-->trialnr
->membrane_potential
->spikeindices
->thresholds
->thresholdindices
->classification
->classification/apwidth
-  |-->ahpamp
-  |-->meanspike
-    |-->v
-    |-->spikeindex
-    |-->threshold
-    |-->thresholdindex
-    |-->apwidth
-    |-->ahpamp
->firing_rate
->mean_threshold
->Analysis
->sta
-  |-->ic
-  |-->ic/raw
-  |-->ic/cor
-  |-->ic/correg
-  |-->ic/priorPV
-  |-->ic/STPV
-  |-->ic/normalized_peakdistance
-  |-->x
-    |-->raw
-    |-->cor
-    |-->correg
-    |-->priorPV
-    |-->STPV
-    |-->normalized_peakdistance
->Analysis_Settings
-  |-->threshold
-    |-->thresholdmethod
-    |-->searchthreshold
-    |-->thresholdwindow
-    |-->refractory_period
-    |-->derthreshold
-  |-->MIanalysis
-    |-->windowtype
-    |-->windowsize
-    |-->factor_ron_roff
-  |-->staparams
-    |-->ic
-      |-->normalize
-      |-->lambda_original
-      |-->window
-      |-->factor_downsampling
-      |-->lambdaI
-      |-->projection_whichsta
-    |-->x
-      |-->normalize
-      |-->lambda_original
-      |-->window
-      |-->factor_downsampling
-      |-->lambdaI
-      |-->projection_whichsta
-  |-->classification
-    |-->window
-    |-->stdwindow
-    |-->minisi
-  |-->saveindividualsettings
->normalized_trial
+
+Each cell data contains multiple trials. Each trial has the structure diplayed below:
+
+> data_index (dict)  
+  |->hidden_state (array)
+  |->input_current (array)
+  |->input_generation_settings (dict)
+      |-->baseline 
+      |-->amplitude_scaling 
+      |-->tau 
+      |-->mean_firing_rate 
+      |-->sampling_rate 
+      |-->duration 
+      |-->FLAG_convert_to_amphere 
+      |-->condition 
+      |-->experimentname 
+      |-->experimentername 
+      |-->experimentnr 
+      |-->trialnr 
+  |->membrane_potential (array)
+  |->spikeindices (array)
+  |->thresholds (array)
+  |->thresholdindices (array)
+  |->classification 
+  |->classification/apwidth (dict)
+      |-->ahpamp 
+      |-->meanspike (dict)
+        |-->v 
+        |-->spikeindex
+        |-->threshold
+        |-->thresholdindex
+        |-->apwidth
+        |-->ahpamp
+  |->firing_rate 
+  |->mean_threshold
+  |->Analysis
+  |->sta (dict)
+      |-->ic 
+      |-->ic/raw
+      |-->ic/cor
+      |-->ic/correg
+      |-->ic/priorPV
+      |-->ic/STPV
+      |-->ic/normalized_peakdistance
+      |-->x
+        |-->raw
+        |-->cor
+        |-->correg
+        |-->priorPV
+        |-->STPV
+        |-->normalized_peakdistance
+  |->Analysis_Settings (dict)
+      |-->threshold
+        |-->thresholdmethod
+        |-->searchthreshold
+        |-->thresholdwindow
+        |-->refractory_period
+        |-->derthreshold
+      |-->MIanalysis (dict)
+        |-->windowtype
+        |-->windowsize
+        |-->factor_ron_roff
+      |-->staparams (dict)
+        |-->ic (dict)
+          |-->normalize
+          |-->lambda_original
+          |-->window
+          |-->factor_downsampling
+          |-->lambdaI
+          |-->projection_whichsta
+        |-->x (dict)
+          |-->normalize
+          |-->lambda_original
+          |-->window
+          |-->factor_downsampling
+          |-->lambdaI
+          |-->projection_whichsta
+      |-->classification (dict)
+        |-->window
+        |-->stdwindow
+        |-->minisi
+      |-->saveindividualsettings
+  |->normalized_trial (array)
