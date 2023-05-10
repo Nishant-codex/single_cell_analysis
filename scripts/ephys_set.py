@@ -18,6 +18,7 @@ from math import isnan
 from utils import *
 from analyze_single_cell import collect_drug_and_acsf
 from impedance import *
+
 class EphysSet:
 
     def __init__(self,data,cond,exp_name):
@@ -68,7 +69,7 @@ class EphysSet:
 
             return avg
 
-    def get_Vm(self):
+    def get_Vm(self,return_mean=True):
         """_summary_
 
         Args:
@@ -89,9 +90,12 @@ class EphysSet:
 
         for i, j in zip(thr_ind, thr):
             Vm.append(V[int(i)+1:int(i)+50])
-        return np.mean(Vm), Vm, np.mean(V)
-
-    def get_dvdt(self,data):
+        if return_mean:
+            return np.mean(Vm), Vm, np.mean(V)
+        else:
+            return Vm
+    
+    def get_dvdt(self,data,return_mean=True):
         """_summary_
 
         Args:
@@ -112,9 +116,11 @@ class EphysSet:
             posn = ~posp
             dvdt_p.append(np.mean(dv_[posp]))
             dvdt_n.append(np.mean(dv_[posn]))
-
-        return np.mean(dvdt_p), np.mean(dvdt_n)
-
+        if return_mean:
+            return np.mean(dvdt_p), np.mean(dvdt_n)
+        else:
+            return dvdt_p, dvdt_n
+    
     def sub_threshold_resistance(self):
         """_summary_
 
@@ -131,7 +137,7 @@ class EphysSet:
         
         return R
 
-    def get_thresholds(self):
+    def get_thresholds(self,return_mean=True):
         """_summary_
 
         Args:
@@ -141,9 +147,12 @@ class EphysSet:
             _type_: _description_
         """
         ind = ~np.isnan(self.data['thresholds'])
-        return np.mean(self.data['thresholds'][ind])
-
-    def get_isi(self):
+        if return_mean:
+            return np.mean(self.data['thresholds'][ind])
+        else:
+            return self.data['thresholds'][ind]
+        
+    def get_isi(self,return_mean=True):
         """_summary_
 
         Args:
@@ -153,9 +162,12 @@ class EphysSet:
             _type_: _description_
         """
         ind = ~np.isnan(self.data['thresholds'])
-        return np.mean(np.diff(self.data['spikeindices'][ind]))
-
-    def get_threshold_adaptation(self):
+        if return_mean:
+            return np.mean(np.diff(self.data['spikeindices'][ind]))
+        else:
+            return np.diff(self.data['spikeindices'][ind])
+        
+    def get_threshold_adaptation(self,return_mean=True):
         """_summary_
 
         Args:
@@ -165,9 +177,12 @@ class EphysSet:
             _type_: _description_
         """
         ind = ~np.isnan(self.data['thresholds'])
-        return np.mean(np.diff(self.data['thresholds'][ind]))
+        if return_mean:
+            return np.mean(np.diff(self.data['thresholds'][ind]))
+        else: 
+            return np.diff(self.data['thresholds'][ind])
 
-    def get_AP_peak(self,spike_waves):
+    def get_AP_peak(self,spike_waves,return_mean=True):
         """_summary_
 
         Args:
@@ -179,9 +194,12 @@ class EphysSet:
         max_v = []
         for i in spike_waves:
             max_v.append(np.max(i))
-        return np.mean(max_v)
+        if return_mean:
+            return np.mean(max_v)
+        else:
+            return max_v
 
-    def get_AP_peak_adaptation(self,spike_waves):
+    def get_AP_peak_adaptation(self,spike_waves,return_mean=True):
         """_summary_
 
         Args:
@@ -193,9 +211,12 @@ class EphysSet:
         max_v = []
         for i in spike_waves:
             max_v.append(np.max(i))
-        return np.mean(np.diff(max_v))
+        if return_mean:
+            return np.mean(np.diff(max_v))
+        else:
+            return np.diff(max_v)
 
-    def get_AP_width(self):
+    def get_AP_width(self,return_mean=True):
         """_summary_
 
         Args:
@@ -226,9 +247,12 @@ class EphysSet:
                 width.append((int(i-j)+right_first[0][0]+1)-(left_first[0][-1]))
             except:
                 pass
-        return np.mean(width)
+        if return_mean:
+            return np.mean(width)
+        else:
+            return width
 
-    def hyperpolarized_value(self):
+    def hyperpolarized_value(self,return_mean=True):
         """_summary_
 
         Args:
@@ -250,7 +274,7 @@ class EphysSet:
         """
         return self.data['thresholdindices'][0]
 
-    def get_up_down_ratio(self):
+    def get_up_down_ratio(self,return_mean=True):
         """_summary_
 
         Args:
@@ -270,7 +294,7 @@ class EphysSet:
             avg_down = self.data['Analysis']['ndown']
         return np.nanmean(np.array(avg_up)/np.array(avg_down))
 
-    def subthreshold(self, subthreshold=False, plot=False):
+    def subthreshold(self, subthreshold=False, plot=False,return_mean=True):
         """_summary_
 
         Args:
@@ -314,9 +338,12 @@ class EphysSet:
         zero_spikes[tailored_spikes] = True
         if subthreshold == True:
             zero_spikes = ~zero_spikes
-        return np.mean(V_)
-
-    def isi_adaptation_index(self):
+        if return_mean:
+            return np.mean(V_)
+        else:
+            return V_
+        
+    def isi_adaptation_index(self,return_mean=True):
         """_summary_
 
         Args:
@@ -336,9 +363,12 @@ class EphysSet:
         factors = []
         for j in range(9):
             factors.append(avgs[j]/avgs[j+1])
-        return (np.mean(factors))
+        if return_mean:                
+            return (np.mean(factors))
+        else:
+            return factors
 
-    def threshold_adaptation_index(self):
+    def threshold_adaptation_index(self,return_mean=True):
         """_summary_
 
         Args:
@@ -358,9 +388,12 @@ class EphysSet:
         factors = []
         for j in range(9):
             factors.append(avgs[j]/avgs[j+1])
-        return (np.mean(factors))
+        if return_mean:        
+            return (np.mean(factors))
+        else:
+            return factors
 
-    def psth(self):
+    def psth(self,return_mean=True):
         """_summary_
 
         Args:
@@ -386,9 +419,12 @@ class EphysSet:
             else:
                 count_spk.append(sum(V_zero[start:start+width]))
                 start = start+width
-        return np.mean(count_spk)
+        if return_mean:        
+            return np.mean(count_spk)
+        else:
+            return count_spk
 
-    def get_inst_fr(self):
+    def get_inst_fr(self,return_mean=True):
         """_summary_
 
         Args:
@@ -397,15 +433,18 @@ class EphysSet:
         Returns:
             _type_: _description_
         """
-        return np.mean(1/(np.diff(self.data['spikeindices'])))
-    
-    def get_MI(self):
+        if return_mean:        
+            return np.mean(1/(np.diff(self.data['spikeindices'])))
+        else:
+            return 1/(np.diff(self.data['spikeindices']))
+
+    def get_MI(self,return_mean=True):
         if type(self.data['Analysis']) == list:
             return np.mean([i['FI'] for i in self.data['Analysis']])
         else:
             return self.data['Analysis']['FI']
     
-    def get_firing_rate(self):
+    def get_firing_rate(self,return_mean=True):
         """_summary_
 
         Args:
@@ -414,9 +453,12 @@ class EphysSet:
         Returns:
             _type_: _description_
         """
-        return np.mean(self.data['firing_rate'])
+        if return_mean:        
+            return np.mean(self.data['firing_rate'])
+        else:
+            return self.data['firing_rate']
 
-    def spike_frequency_adaptation(self):
+    def spike_frequency_adaptation(self,return_mean=True):
         """_summary_
 
         Args:
@@ -442,9 +484,13 @@ class EphysSet:
             else:
                 count_spk.append(sum(V_zero[start:start+width]))
                 start = start+width
-        return np.mean(np.diff(count_spk))
 
-    def get_impedence(self):
+        if return_mean:        
+            return np.mean(np.diff(count_spk))
+        else:
+            return np.diff(count_spk)
+
+    def get_impedence(self,return_mean=True):
         """_summary_
 
         Args:
@@ -457,8 +503,11 @@ class EphysSet:
         V_acsf = self.data['membrane_potential']
         spk_acsf, V_acsf, I_acsf = return_stiched_spike_train(self.data)
         imp = overdracht_wytse(0.01, I_acsf, V_acsf, 20001, 20001, 1)
-        return np.mean(imp)
-
+        if return_mean:
+            return np.mean(imp)
+        else:
+            return imp
+    
     def get_ephys_vals(self):
         """_summary_
 
@@ -604,7 +653,6 @@ def return_all_ephys_dict_old(cond:list, experimenter:str=None)->dict:
     all_ephys_with_cond['inh_acsf'] = all_ephys_data_inh_acsf
     all_ephys_with_cond['cond'] = cond
     return all_ephys_with_cond
-
 
 def return_all_ephys_dict():
     """returns a dictonary with all the ephys properties for each cell for the 
