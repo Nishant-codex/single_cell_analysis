@@ -1,3 +1,4 @@
+#%%
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -18,6 +19,7 @@ from math import isnan
 from utils import *
 from analyze_single_cell import collect_drug_and_acsf
 from impedance import *
+from sklearn.linear_model import LinearRegression
 
 class EphysSet:
 
@@ -28,7 +30,7 @@ class EphysSet:
         self.exp_name = exp_name
         self.V = self.data['membrane_potential']
     
-    def remove_nan(self):
+    def remove_nan(self,data):
         """_summary_
 
         Args:
@@ -89,7 +91,7 @@ class EphysSet:
         thr_ind = thr_ind[ind]
 
         for i, j in zip(thr_ind, thr):
-            Vm.append(V[int(i)+1:int(i)+50])
+            Vm.append(V[int(i)-70:int(i)+100])
         if return_mean:
             return np.mean(Vm), Vm, np.mean(V)
         else:
@@ -130,11 +132,16 @@ class EphysSet:
         Returns:
             _type_: _description_
         """
-        spikes = self.data['spikeindices']
-        V = self.data['membrane_potential'][:spikes[0]]
-        I = self.data['input_current'][:spikes[0]]
-        R = np.nanmean(V/I)
+        spikes = self.remove_nan(self.data['thresholdindices'])
+
+        V = self.data['membrane_potential'][:int(spikes[0])-100]
+        I = self.data['input_current'][:int(spikes[0])-100].reshape((-1, 1))
         
+        model = LinearRegression()
+        model.fit(I, V)
+
+        R = model.coef_
+
         return R
 
     def get_thresholds(self,return_mean=True):
@@ -654,6 +661,14 @@ def return_all_ephys_dict_old(cond:list, experimenter:str=None)->dict:
     all_ephys_with_cond['cond'] = cond
     return all_ephys_with_cond
 
+def load_single_cell_test(exp):
+    path_i = 'C:/Users/Nishant Joshi/Google Drive/Analyzed/'
+    try:
+        data = loadmatInPy(path_i + exp + '_analyzed.mat')
+    except:
+        data = loadmatInPy(path_i + 'Copy of ' + exp + '_analyzed.mat')
+    return data        
+
 def return_all_ephys_dict():
     """returns a dictonary with all the ephys properties for each cell for the 
     condition provided along with the aCSF counterpart. 
@@ -715,3 +730,74 @@ def return_all_ephys_dict():
     all_ephys_with_cond['cond'] = cond
     return all_ephys_with_cond
 
+def return_all_waveforms():
+    """returns a dictonary with all the ephys properties for each cell for the 
+    condition provided along with the aCSF counterpart. 
+    Exc and inhibitory cells are segregated.
+    
+    Args:
+        cond (list): a list containing the condion to be analyzed
+        experimenter (str, optional): if a specific experimenter needs to aanlyzed seperately. Defaults to None.
+
+    Raises:
+        ValueError:  'condition should be a list even if a single value is provided'
+
+    Returns:
+        dict: dictionary containing all e-phys features for each cell  
+    """
+
+    all_ephys_with_cond = {}
+    path_i = 'C:/Users/Nishant Joshi/Google Drive/Analyzed/'
+
+    new_a = join_conditions()
+
+    new_a_inh = new_a.groupby('tau').get_group(50)
+    new_a_exc = new_a.groupby('tau').get_group(250)
+
+    exp_name_inh = np.unique(np.array(new_a_inh['experimentname']))
+    exp_name_exc = np.unique(np.array(new_a_exc['experimentname']))
+    all_ephys_data_inh = []
+    all_ephys_data_exc = []
+    problem_cell = []
+    
+    count = 0
+    for exp in exp_name_exc:
+        count += 1
+        print(count,exp)
+        try:
+            data = loadmatInPy(path_i + exp + '_analyzed.mat')
+        except:
+            data = loadmatInPy(path_i + 'Copy of ' + exp + '_analyzed.mat')
+        for instance in data:
+            cond = instance['input_generation_settings']['condition']
+            ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp)
+            waves_exc = list(np.mean(ephys_obj.get_Vm(return_mean=False),axis=0))
+            waves_exc.append(ephys_obj.cond)
+            waves_exc.append(ephys_obj.exp_name)
+            all_ephys_data_exc.append(waves_exc)
+
+    count = 0
+    for exp in exp_name_inh:
+        count += 1
+        print(count,exp)
+        try:
+            data = loadmatInPy(path_i + exp + '_analyzed.mat')
+
+        except:
+            data = loadmatInPy(path_i + 'Copy of ' + exp + '_analyzed.mat')
+        for instance in data:
+            cond = instance['input_generation_settings']['condition']
+            ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp)
+            waves_inh = list(np.mean(ephys_obj.get_Vm(return_mean=False),axis=0))
+            waves_inh.append(ephys_obj.cond)
+            waves_inh.append(ephys_obj.exp_name)
+
+            all_ephys_data_inh.append(waves_inh)
+
+    all_ephys_with_cond['exc'] = all_ephys_data_exc
+    all_ephys_with_cond['inh'] = all_ephys_data_inh
+    return all_ephys_with_cond
+
+
+
+# %%

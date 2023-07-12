@@ -1,4 +1,3 @@
-
 Each cell data contains multiple trials. Each trial has the structure diplayed below:
 
 > data_index (dict)  

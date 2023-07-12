@@ -7,8 +7,8 @@ from scipy.io import loadmat, savemat
 import importlib.util
 import matplotlib.pyplot as plt
 from scipy.sparse import data 
-from plotnine import ggplot, geom_point, aes, stat_smooth, facet_wrap
-from plotnine.data import mtcars
+# from plotnine import ggplot, geom_point, aes, stat_smooth, facet_wrap
+# from plotnine.data import mtcars
 import seaborn as sns 
 import matplotlib.pyplot as plt
 import pandas as pd

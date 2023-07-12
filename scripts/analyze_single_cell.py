@@ -10,8 +10,7 @@ import sklearn
 from sklearn import datasets, linear_model
 import matplotlib.pyplot as plt
 from scipy.sparse import data 
-from plotnine import ggplot, geom_point, aes, stat_smooth, facet_wrap
-from plotnine.data import mtcars
+
 import pandas as pd 
 import seaborn as sns 
 import matplotlib.pyplot as plt

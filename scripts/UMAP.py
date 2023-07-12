@@ -1,3 +1,4 @@
+#%%
 import sklearn.cluster as cluster
 from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
 from sklearn import manifold
@@ -10,8 +11,6 @@ from numpy.lib.function_base import append
 from scipy.io import loadmat, savemat
 import importlib.util
 from scipy.sparse import data 
-from plotnine import ggplot, geom_point, aes, stat_smooth, facet_wrap
-from plotnine.data import mtcars
 import seaborn as sns 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -29,8 +28,8 @@ from ephys_set import return_all_ephys_dict
 import pickle
 from PCA import * 
 import umap.umap_ as umap
-
-def plot_UMAP(data_inh,data_exc,c_exc,c_inh,neighbours,distance,condition_inh,condition_exc,figsize=None,random_state=0):
+#%%
+def plot_UMAP(data_inh,data_exc,c_exc,c_inh,neighbours,distance,condition_inh,condition_exc,figsize=None,random_state=0,save=False):
     """plots UMAP for excitatory and inhibitory cells 
 
     Args:
@@ -86,8 +85,10 @@ def plot_UMAP(data_inh,data_exc,c_exc,c_inh,neighbours,distance,condition_inh,co
     sns.scatterplot(data=df_2d,x='Dim1',y='Dim2',hue='condition',  cmap='gist_rainbow',ax=ax22d)
     ax22d.set_title('UMAP inhibitory')
 
-
-    plt.show()
+    if save:
+        plt.savefig('C:/Users/Nishant Joshi/Documents/DNM/umap_20.png')
+    else:
+        plt.show()
 
 def plot_UMAP_clusters(data_inh,data_exc,neighbours,distance,condition_inh,condition_exc,k_exc,k_inh,random_state):
     """plots UMAP for excitatory and inhibitory cells 
@@ -180,3 +181,5 @@ def plot_UMAP_combined(data_exc,data_inh,neighbours,distance,labels,random_state
     ax12d.set_title('UMAP excitatory and Inhibitory')
   
     plt.show()
+
+# %%
