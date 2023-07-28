@@ -23,11 +23,12 @@ from sklearn.linear_model import LinearRegression
 
 class EphysSet:
 
-    def __init__(self,data,cond,exp_name):
+    def __init__(self,data,cond,exp_name,trialnr):
 
         self.data = data
         self.cond = cond
         self.exp_name = exp_name
+        self.trialnr = trialnr
         self.V = self.data['membrane_potential']
     
     def remove_nan(self,data):
@@ -547,7 +548,8 @@ class EphysSet:
         spk_fr_adp = self.spike_frequency_adaptation()
         imp = self.get_impedence()
 
-        ephys_data =      [Vm_avg, #
+        ephys_data =      [Vm, 
+                           Vm_avg, #
                             dvdt_p,
                             dvdt_n,
                             avg_V,
@@ -571,7 +573,8 @@ class EphysSet:
                             spk_fr_adp,
                             imp,
                             self.exp_name,
-                            self.cond] #
+                            self.cond,
+                            self.trialnr] #
         return ephys_data
 
 def return_all_ephys_dict_old(cond:list, experimenter:str=None)->dict:
@@ -709,7 +712,8 @@ def return_all_ephys_dict():
             data = loadmatInPy(path_i + 'Copy of ' + exp + '_analyzed.mat')
         for instance in data:
             cond = instance['input_generation_settings']['condition']
-            ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp)
+            trialnr = instance['input_generation_settings']['trialnr']
+            ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp,trialnr=trialnr)
             all_ephys_data_exc.append(ephys_obj.get_ephys_vals())
 
     count = 0
@@ -722,6 +726,7 @@ def return_all_ephys_dict():
             data = loadmatInPy(path_i + 'Copy of ' + exp + '_analyzed.mat')
         for instance in data:
             cond = instance['input_generation_settings']['condition']
+            trialnr = instance['input_generation_settings']['trialnr']
             ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp)
             all_ephys_data_inh.append(ephys_obj.get_ephys_vals())
 
@@ -799,5 +804,7 @@ def return_all_waveforms():
     return all_ephys_with_cond
 
 
+
+# %%
 
 # %%
