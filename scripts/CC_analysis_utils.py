@@ -104,7 +104,6 @@ def plot_single_cell(path_cc: str, filename: str,plottype=None):
             ax[1].plot(np.array(Is).flatten())
             plt.show()
 
-
 def returnVsandIs(path_cc: str, filename: str)->dict:
     """ returns all the Vs and Is combined for all steps  
 
@@ -146,7 +145,6 @@ def returnVsandIs(path_cc: str, filename: str)->dict:
                 tI.append(data[step][:, 0])
         return_dict[str(ind_trial+1)] = {'V': Vs, 'I': Is, 'tV': tV, 'tI': tI}
     return return_dict
-
 
 def plot_steps(path_cc,filename):
     def order_list(data):
@@ -196,7 +194,6 @@ def plot_steps(path_cc,filename):
         plt.show()
 
     return_dict[str(ind_trial+1)] = {'V': Vs, 'I': Is, 'tV': tV, 'tI': tI}
-
 
 def get_threshold_fontaine(membrane_potential, dt, searchthreshold, windown, refractory_period=0, derthreshold=[1, 5], plotyn=0):
 
@@ -282,7 +279,6 @@ def get_threshold_fontaine(membrane_potential, dt, searchthreshold, windown, ref
 
     return np.array(spikeindices, dtype=np.int32), thresholds, np.array(thresholdindices, dtype=np.int32)
 
-
 def check_for_faultycell(val_dict, name, exceptions=None):
     """_summary_
 
@@ -312,7 +308,6 @@ def check_for_faultycell(val_dict, name, exceptions=None):
                         return False
     elif name == exceptions:
         return True
-
 
 def collect_all_spike_data(path_cc, df_CC_exp , condition):
     """_summary_
@@ -413,7 +408,6 @@ def collect_all_spike_data(path_cc, df_CC_exp , condition):
                 {'avg_I': I_means_acsf, 'spike_info': spikes_and_thrs_acsf, 'filename': acsf_file})
     return [files_with_spks_and_thresholds_drug, files_with_spks_and_thresholds_acsf]
 
-
 def collect_singlecell_spike_data(path_cc, filename ):
     """_summary_
 
@@ -454,7 +448,6 @@ def collect_singlecell_spike_data(path_cc, filename ):
         except:
             print('problem with '+drug_file)
             return 'faulty'
-
 
 def return_name_date_exp_fn(string):
     if 'NC' in string:

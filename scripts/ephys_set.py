@@ -21,6 +21,43 @@ from analyze_single_cell import collect_drug_and_acsf
 from impedance import *
 from sklearn.linear_model import LinearRegression
 
+# parameters{1} = 'Current at first spike'; @
+# parameters{3} = 'AP Count - Start'; @
+# parameters{5} = 'Absolute Firing Rate - Start'; @
+# parameters{7} = 'Inst Firing Rate - Start'; @
+# parameters{9} = 'AP Latency First - Start'; @
+# parameters{11} = 'AP Latency Last - Start'; @
+# parameters{13} = 'AP Latency Window - Start';
+# parameters{15} = 'AP Latency Compression - Start';
+# parameters{17} = 'ISI Min - Start'; @
+# parameters{19} = 'ISI Max - Start'; @
+# parameters{21} = 'ISI Mean - Start'; @
+# parameters{23} = 'ISI Median - Start'; @
+# parameters{25} = 'ISI Adapt Rate - Start'; 
+# parameters{27} = 'AP Threshold First - Start'; @
+# parameters{29} = 'AP Threshold Last - Start'; @ 
+# parameters{31} = 'AP Threshold Min - Start'; @ 
+# parameters{33} = 'AP Threshold Max - Start'; @
+# parameters{35} = 'AP Threshold Mean - Start'; @
+# parameters{37} = 'AP Threshold Median - Start'; @
+# parameters{39} = 'AP Threshold AdaptationRate - Start';
+# parameters{41} = 'AP HalfWidth First - Start'; @
+# parameters{43} = 'AP HalfWidth Last - Start'; @
+# parameters{45} = 'AP HalfWidth Min - Start'; @
+# parameters{47} = 'AP HalfWidth Max - Start'; @
+# parameters{49} = 'AP HalfWidth Mean - Start'; @
+# parameters{51} = 'AP HalfWidth Median - Start'; @
+# parameters{53} = 'AP HalfWidth AdaptationRate - Start';
+# parameters{55} = 'AP Amplitude First - Start'; @
+# parameters{57} = 'AP Amplitude Last - Start'; @
+# parameters{59} = 'AP Amplitude Min - Start'; @
+# parameters{61} = 'AP Amplitude Max - Start'; @
+# parameters{63} = 'AP Amplitude Mean - Start'; @
+# parameters{65} = 'AP Amplitude Median - Start'; @
+# parameters{67} = 'AP Amplitude AdaptationRate - Start';
+
+
+
 class EphysSet:
 
     def __init__(self,data,cond,exp_name,trialnr):
@@ -30,7 +67,8 @@ class EphysSet:
         self.exp_name = exp_name
         self.trialnr = trialnr
         self.V = self.data['membrane_potential']
-    
+        self.dt = 1/20 
+
     def remove_nan(self,data):
         """_summary_
 
@@ -120,7 +158,7 @@ class EphysSet:
             dvdt_p.append(np.mean(dv_[posp]))
             dvdt_n.append(np.mean(dv_[posn]))
         if return_mean:
-            return np.mean(dvdt_p), np.mean(dvdt_n)
+            return np.mean(dvdt_p), np.mean(dvdt_n),np.max(dvdt_p), np.max(dvdt_n),np.min(dvdt_p), np.min(dvdt_n)
         else:
             return dvdt_p, dvdt_n
     
@@ -171,9 +209,9 @@ class EphysSet:
         """
         ind = ~np.isnan(self.data['thresholds'])
         if return_mean:
-            return np.mean(np.diff(self.data['spikeindices'][ind]))
+            return np.mean(np.diff(self.data['spikeindices'][ind])*dt)
         else:
-            return np.diff(self.data['spikeindices'][ind])
+            return np.diff(self.data['spikeindices'][ind])*dt
         
     def get_threshold_adaptation(self,return_mean=True):
         """_summary_
@@ -577,6 +615,315 @@ class EphysSet:
                             self.trialnr] #
         return ephys_data
 
+
+
+class EphysSet_niccolo:
+
+    def __init__(self,data,cond,exp_name,trialnr):
+
+        self.data = data
+        self.cond = cond
+        self.exp_name = exp_name
+        self.trialnr = trialnr
+        self.V = self.data['membrane_potential']
+        self.I = self.data['input_current']
+        self.dt = 1/20 
+
+    def remove_nan(self,data):
+        """_summary_
+
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        ind = ~np.isnan(data)
+        data_ = data[ind]
+        return data_
+
+    def rolling_avg(self,data):
+        """_summary_
+
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        start = 0
+        length = len(data)//10
+        end = len(data)
+        finish = False
+        avg = []
+
+        if length == 0:
+            return np.mean(data[start:end])
+        else:
+            while finish != True:
+                if start+length < end:
+                    avg.append(np.mean(data[start:start+length]))
+                    start += length
+                else:
+                    avg.append(np.mean(data[start:end]))
+                    finish = True
+
+            return avg
+
+    def return_quant_divided_by_time(self,divisions,quant):
+        total_duration = len(self.data['membrane_potential'])/20
+        quantity = quant
+        time_ranges = np.arange(0,total_duration+1,total_duration//divisions)
+        spike_times = self.data['spikeindices']/20
+        time_divided_spiketimes = [np.array(spike_times[np.where(np.logical_and(spike_times>time_ranges[i],spike_times<=time_ranges[i+1] ))[0]]*20,dtype=np.int32)
+        for i in range(len(time_ranges)-1)]
+        last = 0
+        vals_divided_by_time = []
+        for i in time_divided_spiketimes:
+            vals_divided_by_time.append(quantity[last:last+len(i)])
+            last = len(i)
+        return vals_divided_by_time  
+
+    def fano_factor(self,divisions):
+        total_duration = len(self.data['membrane_potential'])/20
+        time_ranges = np.arange(0,total_duration+1,total_duration//divisions)
+        spike_times = self.data['spikeindices']/20
+        spike_counts = [len(np.array(spike_times[np.where(np.logical_and(spike_times>time_ranges[i],spike_times<=time_ranges[i+1] ))[0]]*20,dtype=np.int32))
+        for i in range(len(time_ranges)-1)]
+
+        return np.var(spike_counts)/np.mean(spike_counts)  
+
+    def cv(self,data):
+        return np.std(data)/np.mean(data)
+    
+    #values
+    def get_current_at_first_spike(self):
+
+        firstspike_ind = self.data['spikeindices'][0]
+        return self.I[firstspike_ind]
+    
+    def get_ap_count(self):
+        """_summary_
+
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+
+        thr = self.data['thresholds']
+        thr_ind = self.data['thresholdindices']
+        spikes = self.data['spikeindices']
+        ind = ~np.isnan(thr)
+        spikes = spikes[ind]
+        thr = thr[ind]
+        thr_ind = thr_ind[ind]
+        return len(spikes)
+        
+    def get_firing_rate(self,return_mean=True):
+        """_summary_
+
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        if return_mean:        
+            return np.mean(self.data['firing_rate'])
+        else:
+            return self.data['firing_rate']
+
+    def get_inst_fr(self,return_mean=True):
+        """_summary_
+
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        if return_mean:        
+            return np.mean(1/(np.diff(self.data['spikeindices']*self.dt)))
+        else:
+            return 1/(np.diff(self.data['spikeindices']))
+
+    def get_time_to_first_spike(self):
+        """_summary_
+
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        return self.data['thresholdindices'][0]*self.dt
+
+    def get_isi(self,return_mean=True):
+        """_summary_
+
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        ind = ~np.isnan(self.data['thresholds'])
+        isi =np.diff(self.data['spikeindices'][ind]*self.dt)
+        if return_mean:
+            try:
+                return np.mean(isi),np.median(isi),np.max(isi),np.min(isi)
+            except:
+                return np.nan,np.nan,np.nan,np.nan
+        else:
+            return np.diff(self.data['spikeindices'][ind])*self.dt
+
+    def get_thresholds(self,return_mean=True):
+        """_summary_
+
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        ind = ~np.isnan(self.data['thresholds'])
+        if return_mean:
+            return self.data['thresholds'][ind][0], np.mean(self.data['thresholds'][ind]),np.median(self.data['thresholds'][ind]),np.min(self.data['thresholds'][ind]),np.max(self.data['thresholds'][ind])
+        else:
+            return self.data['thresholds'][ind]
+              
+    def get_AP_width(self,return_mean=True):
+        """_summary_
+
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        thr_ind = self.data['thresholdindices']
+        thr = self.data['thresholds']
+        ind = ~np.isnan(thr_ind)
+        spks = self.data['spikeindices'][ind]
+        thr = thr[ind]
+        thr_ind = thr_ind[ind]
+        V = self.data['membrane_potential']
+        peak = 0
+        width = []
+        for i, j in zip(spks, thr_ind):
+            try:
+                spike_wf = V[int(j):int(j)+100]
+                # plt.plot(spike_wf)
+                left = V[int(j):i]
+                right_ind = i-int(j)
+                right = spike_wf[right_ind:]
+                half_height = V[i]/2
+                left_first = np.where(left <= half_height)
+                right_first = np.where(right <= half_height)
+                width.append(((int(i-j)+right_first[0][0]+1)-(left_first[0][-1]))/40)
+            except:
+                pass
+        if return_mean:
+            return np.mean(width),np.median(width),np.max(width),np.min(width)
+        else:
+            return width  
+
+    def get_AP_peak(self,return_mean=True):
+        """_summary_
+
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        max_v = []
+        thr_ind = self.data['thresholdindices']
+        thr = self.data['thresholds']
+        ind = ~np.isnan(thr_ind)
+        spks = self.data['spikeindices'][ind]
+        thr = thr[ind]
+        thr_ind = thr_ind[ind]
+        V = self.data['membrane_potential']
+        for i, j in zip(spks, thr_ind):
+            try:
+                spike_wf = V[int(j):int(j)+100]
+                max_v.append(np.max(spike_wf)-V[int(j)])
+            except:
+                pass
+
+        if return_mean:
+            return np.mean(max_v),np.median(max_v),np.min(max_v),np.max(max_v)
+        else:
+            return max_v
+
+    def get_ephys_vals(self):
+        """_summary_
+
+        Args:
+            data_i (dict): _description_
+
+        Returns:
+            _type_: _description_
+        """
+
+        current_at_first_spike= self.get_current_at_first_spike()
+        ap_count = self.get_ap_count()
+        fr = self.get_firing_rate()
+        inst_fr = self.get_inst_fr()
+        time_to_first_spike=self.get_time_to_first_spike()
+        mean_isi,median_isi,max_isi,min_isi = self.get_isi()
+        first_thr, mean_thr, median_thr, min_thr, max_thr = self.get_thresholds()
+        mean_width,median_width,max_width,min_width = self.get_AP_width()
+        mean_amplitude,median_amplitude,min_amplitude,max_amplitude = self.get_AP_peak()
+
+        ephys_data =      [current_at_first_spike,
+                           ap_count,
+                           fr,
+                           inst_fr,
+                           time_to_first_spike,
+                           mean_isi,
+                           median_isi,
+                           max_isi,
+                           min_isi,
+                           first_thr, 
+                           mean_thr, 
+                           median_thr, 
+                           min_thr, 
+                           max_thr,
+                           mean_width,
+                           median_width,
+                           max_width,
+                           min_width,
+                           mean_amplitude,
+                           median_amplitude,
+                           min_amplitude,
+                           max_amplitude,
+                           self.exp_name,
+                           self.cond,
+                           self.trialnr] #
+        return ephys_data
+
+
+def test_single_exp(exp_name):
+
+    all_ephys_with_cond = {}
+    all_ephys_data = []
+    path_i = 'C:/Users/Nishant Joshi/Google Drive/Analyzed/'
+    try:
+        data = loadmatInPy(path_i + exp_name + '_analyzed.mat')
+    except:
+        data = loadmatInPy(path_i + 'Copy of ' + exp_name + '_analyzed.mat')
+    for instance in data:
+        cond = instance['input_generation_settings']['condition']
+        trialnr = instance['input_generation_settings']['trialnr']
+        ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp_name,trialnr=trialnr)
+        all_ephys_data.append(ephys_obj.get_ephys_vals())
+
+    return all_ephys_data  
+
 def return_all_ephys_dict_old(cond:list, experimenter:str=None)->dict:
     """returns a dictonary with all the ephys properties for each cell for the 
     condition provided along with the aCSF counterpart. 
@@ -713,7 +1060,7 @@ def return_all_ephys_dict():
         for instance in data:
             cond = instance['input_generation_settings']['condition']
             trialnr = instance['input_generation_settings']['trialnr']
-            ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp,trialnr=trialnr)
+            ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trialnr)
             all_ephys_data_exc.append(ephys_obj.get_ephys_vals())
 
     count = 0
@@ -727,7 +1074,7 @@ def return_all_ephys_dict():
         for instance in data:
             cond = instance['input_generation_settings']['condition']
             trialnr = instance['input_generation_settings']['trialnr']
-            ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp)
+            ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trialnr)
             all_ephys_data_inh.append(ephys_obj.get_ephys_vals())
 
     all_ephys_with_cond['exc'] = all_ephys_data_exc
@@ -804,7 +1151,5 @@ def return_all_waveforms():
     return all_ephys_with_cond
 
 
-
 # %%
 
-# %%
