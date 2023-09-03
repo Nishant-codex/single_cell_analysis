@@ -1,0 +1,757 @@
+#%%
+import numpy as np 
+import pandas as pd 
+import os
+import pickle
+from typing import Set
+from numpy.lib.function_base import append 
+import scipy.io as spio
+from scipy.io import loadmat, savemat
+import importlib.util
+import seaborn as sns 
+import matplotlib.pyplot as plt
+import pickle as pkl 
+from scipy.signal import find_peaks
+
+#%%
+
+all_cc = pd.read_csv("G:\My Drive\lists\Verification_list_all_CC_FN.csv")
+path_cc = 'G:/My Drive/Step-and-Hold Protocol (Xuan, Asli, NC, Payam)/'
+df_acsf = all_cc[all_cc.drug==False]
+#%%
+
+
+def get_threshold_fontaine(membrane_potential, dt, searchthreshold, windown, refractory_period=0, derthreshold=[1,5], plotyn=0): 
+
+	# Based on Fontaine, Peña, Brette, PLoS Comp Bio 2014: Spike-Threshold
+	# Adaptation Predicted by Membrane Potential Dynamics In Vivo. 
+	
+	# First value of which each of the derivatives specified in derthreshold
+	# exceeds the specified value
+
+	[Nder,_] = np.shape(derthreshold)
+	_,Nvolt = membrane_potential.shape
+	if Nvolt ==1:
+		membrane_potential = membrane_potential.T
+	
+	DerMat = np.nan*np.zeros((Nder,membrane_potential.size))
+	for nd in range(Nder):
+
+		derorder = np.array(derthreshold,dtype=np.int32)[nd,0]
+		der = np.diff(membrane_potential,derorder)
+		if derorder == 1:
+			add_ = np.zeros((1,1))
+			add_[:,:] = np.nan
+			der = np.concatenate((der,add_),axis=1)
+		elif derorder%2 == 1:
+			der = np.concatenate((np.zeros((1,derorder-1)), der, np.zeros((1,derorder))),axis=1)
+		else:
+			der = np.concatenate((np.zeros((1,derorder-1)), der, np.zeros((1,derorder-1))),axis=1)
+		DerMat[nd,:] = der
+
+	# _, spikeindices = findspikes(dt, membrane_potential, searchthreshold, 0, refractory_period)
+
+
+	spikeindices, _ = find_peaks(membrane_potential[0,:], height=0.01,distance=100)
+	spikeindices = np.expand_dims(spikeindices,axis=0)
+	if spikeindices.size >1:
+		spikeindices  = np.array(spikeindices[0,:],dtype=np.int32)
+		Nspikes = np.size(spikeindices)
+	else:
+		spikeindices  = np.array([spikeindices])
+		Nspikes = np.size(spikeindices)
+	thresholds = np.zeros_like(spikeindices,dtype=np.float32)
+
+	if thresholds.size >1:
+		thresholds[:] = np.nan
+	thresholdindices = np.zeros_like(spikeindices,dtype=np.float32)
+	if thresholdindices.size >1:
+
+		thresholdindices[:] = np.nan
+	
+	for ns in range(Nspikes):
+
+		if (spikeindices[ns] - windown[0])>0:
+
+			nn =np.arange(int(spikeindices[ns] - windown[0]),int(spikeindices[ns]+windown[1]),dtype = np.int64)
+		elif (spikeindices[ns] - windown[1])>0:
+			nn = np.arange(1,spikeindices[ns]+windown[1],dtype = np.int64)
+		else:
+			thresholdindices[ns] = 1
+			thresholds[ns] = np.nan
+			continue
+
+		vm_rel = membrane_potential[0,nn]
+		for nd in range(Nder):
+			threshold_temp = np.array(derthreshold)[nd,1]
+			der = DerMat[nd,nn]
+			vm_rel[der<threshold_temp]= np.nan
+
+
+		thresholdindex = np.where(~np.isnan(vm_rel))
+		# print(thresholdindex)
+		if thresholdindex[0].size>0:
+			thresholdindices[ns] = spikeindices[ns]-windown[0]+thresholdindex[0][0]
+			thresholds[ns] = vm_rel[thresholdindex[0][0]]
+			if thresholds[ ns]>0.0:
+				thresholds[ns] = np.nan
+			elif thresholds[ns] <-0.08:
+				thresholds[ns] = np.nan
+		else:
+			thresholds[ns] = np.nan
+	if len(np.array(spikeindices,dtype=np.int32))>1:
+		return np.array(spikeindices,dtype=np.int32), thresholds, np.array(thresholdindices,dtype=np.int32)
+	else:
+		return np.array(spikeindices,dtype=np.int32)[0][0], thresholds[0][0], np.array(thresholdindices,dtype=np.int32)[0][0]
+
+def plot_single_cell(path_cc: str, filename: str,plottype=None):
+    """ to plot single CC cell, voltage and input current side by side 
+
+    Args:
+        path_cc (str): path to all CC files 
+        filename (str): name of the file to be plotted 
+    """
+    if plottype==None:
+        raise('Invalid value, it should be \'stacked\' or \'expanded\'')
+
+    elif plottype == 'stacked':
+        stacked=True
+        expand = False
+
+    elif plottype == 'expanded':
+        stacked= False
+        expand = True
+
+    def order_list(data:list)->list:
+        """ somtimes the list of keys are ordered such that the last value is at the beginning. This function sorts it. 
+
+        Args:
+            data (_type_): the list of keys  
+
+        Returns:
+            list : returns an ordered list 
+        """
+        if data[0][-3] == '0':
+            temp_list = data[2:]
+            rear_vals = data[:2]
+            return temp_list+rear_vals
+        else:
+            return data
+    data = loadmat(path_cc+filename)
+    keys = data.keys()
+    keys = list(keys)[3:]
+    dt = 1/20000
+    searchthreshold = 0
+    thresholdwindow = [1, 0.25]
+    refractory_period = 3
+    derthreshold = [[1, 0.000008], [2, 0.000008]]
+    # nwindow = [np.round(thresholdwindow[0]*dt), np.round(thresholdwindow[1]/dt)]
+    nwindow = [30, 70]
+    trials = len(keys)//20
+    return_dict = {}
+    trial_steps = []
+    for t in range(trials):
+        trial_step = order_list(keys[len(keys)//trials*t:len(keys)//trials*(t+1)])
+        trial_steps.append(trial_step)
+
+    return_dict = {}
+    for ind_trial, trial in enumerate(trial_steps):
+        Is, tI, Vs, tV = [], [], [], []
+        fig, ax = plt.subplots(1, 2, figsize=[10, 5])
+        for index, step in enumerate(trial):
+            if step[-1] == '2':
+                Vs.append(data[step][:, 1])
+                tV.append(data[step][:, 0])
+                if stacked:
+                    ax[0].plot(data[step][:, 0],data[step][:, 1])
+            elif step[-1] == '1':
+                I = data[step][:, 1]
+                Is.append(data[step][:, 1])
+                tI.append(data[step][:, 0])
+                if stacked:
+                    ax[1].plot(data[step][:, 0],data[step][:, 1])
+        plt.show()
+        if expand:
+            V = Vs
+            # spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(np.array(V).flatten(),axis=1),dt=dt,searchthreshold = searchthreshold,windown = nwindow,refractory_period = refractory_period,derthreshold =derthreshold )
+            ax[0].plot(np.array(V).flatten())
+            # V = np.array(V).flatten()
+            # ax[0].plot(spk_ind,V[spk_ind],'x', markersize=12)
+            # ax[0].plot(thr_ind,V[thr_ind],'o', markersize=4)
+            ax[1].plot(np.array(Is).flatten())
+            plt.show()
+
+def returnVsandIs(path_cc: str, filename: str)->dict:
+    """ returns all the Vs and Is combined for all steps  
+
+    Args:
+        path_cc (str): path to all CC files 
+        filename (str): filename
+
+    Returns:
+        dict: a dictionary object containing all Vs and Is for all steps 
+    """
+    def order_list(data):
+        if data[0][-3] == '0':
+            temp_list = data[2:]
+            rear_vals = data[:2]
+            return temp_list+rear_vals
+        else:
+            return data
+    data = loadmat(path_cc+filename)
+    keys = data.keys()
+    keys = list(keys)[3:]
+
+    trials = len(keys)//20
+    return_dict = {}
+    trial_steps = []
+    for t in range(trials):
+        trial_step = order_list(
+            keys[len(keys)//trials*(t):len(keys)//trials*(t+1)])
+        trial_steps.append(trial_step)
+
+    return_dict = {}
+    for ind_trial, trial in enumerate(trial_steps):
+        Is, tI, Vs, tV = [], [], [], []
+        for index, step in enumerate(trial):
+            if step[-1] == '2':
+                Vs.append(data[step][:, 1])
+                tV.append(data[step][:, 0])
+            elif step[-1] == '1':
+                Is.append(data[step][:, 1])
+                tI.append(data[step][:, 0])
+        return_dict[str(ind_trial+1)] = {'V': Vs, 'I': Is, 'tV': tV, 'tI': tI}
+    return return_dict
+
+def plot_steps(path_cc,filename):
+    def order_list(data):
+        if data[0][-3] == '0':
+            temp_list = data[2:]
+            rear_vals = data[:2]
+            return temp_list+rear_vals
+        else:
+            return data
+    data = loadmat(path_cc+filename)
+    keys = data.keys()
+    keys = list(keys)[3:]
+    dt = 1/20000
+    searchthreshold = 0
+    thresholdwindow = [1, 0.25]
+    refractory_period = 3
+    derthreshold = [[1, 0.000008], [2, 0.000008]]
+    # nwindow = [np.round(thresholdwindow[0]*dt), np.round(thresholdwindow[1]/dt)]
+    nwindow = [30, 70]
+    trials = len(keys)//20
+    return_dict = {}
+    trial_steps = []
+    for t in range(trials):
+        trial_step = order_list(
+            keys[len(keys)//trials*t:len(keys)//trials*(t+1)])
+        trial_steps.append(trial_step)
+
+    return_dict = {}
+    for ind_trial, trial in enumerate(trial_steps):
+        Is, tI, Vs, tV = [], [], [], []
+        fig, ax = plt.subplots(1, 2, figsize=[20, 10])
+        for index, step in enumerate(trial):
+            if step[-1] == '2':
+                Vs.append(data[step][:, 1])
+                tV.append(data[step][:, 0])
+            elif step[-1] == '1':
+                I = data[step][:, 1]
+                Is.append(data[step][:, 1])
+                tI.append(data[step][:, 0])
+        V = Vs
+        spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(np.array(V).flatten(), axis=1), dt=dt, searchthreshold=searchthreshold, windown=nwindow, refractory_period=refractory_period, derthreshold=derthreshold)
+        ax[0].plot(np.array(V).flatten())
+        V = np.array(V).flatten()
+        ax[0].plot(spk_ind, V[spk_ind], 'x', markersize=12)
+        ax[0].plot(thr_ind, V[thr_ind], 'o', markersize=4)
+        ax[1].plot(np.array(Is).flatten())
+        plt.show()
+
+    return_dict[str(ind_trial+1)] = {'V': Vs, 'I': Is, 'tV': tV, 'tI': tI}
+
+def check_for_faultycell(val_dict,name,exceptions=None):
+    if exceptions ==None:
+        trials = len(val_dict.keys())
+        if trials ==1:
+            for v in val_dict['1']['V']:
+                if len(v[v<-0.08]) >10:  
+                    print(name + ' is faulty')
+                    return True  
+                else:
+                    return False
+        else:      
+            for k,vals in val_dict.items(): 
+                for v in vals['V']:
+                    if len(v[v<-0.08]) >10:
+                        return True
+                    else:
+                        return False
+    elif name==exceptions:
+        return True
+
+def get_threshold_fontaine(membrane_potential, dt, searchthreshold, windown, refractory_period=0, derthreshold=[1,5], plotyn=0): 
+
+	# Based on Fontaine, Peña, Brette, PLoS Comp Bio 2014: Spike-Threshold
+	# Adaptation Predicted by Membrane Potential Dynamics In Vivo. 
+	
+	# First value of which each of the derivatives specified in derthreshold
+	# exceeds the specified value
+
+	[Nder,_] = np.shape(derthreshold)
+	_,Nvolt = membrane_potential.shape
+	if Nvolt ==1:
+		membrane_potential = membrane_potential.T
+	
+	DerMat = np.nan*np.zeros((Nder,membrane_potential.size))
+	for nd in range(Nder):
+
+		derorder = np.array(derthreshold,dtype=np.int32)[nd,0]
+		der = np.diff(membrane_potential,derorder)
+		if derorder == 1:
+			add_ = np.zeros((1,1))
+			add_[:,:] = np.nan
+			der = np.concatenate((der,add_),axis=1)
+		elif derorder%2 == 1:
+			der = np.concatenate((np.zeros((1,derorder-1)), der, np.zeros((1,derorder))),axis=1)
+		else:
+			der = np.concatenate((np.zeros((1,derorder-1)), der, np.zeros((1,derorder-1))),axis=1)
+		DerMat[nd,:] = der
+
+	# _, spikeindices = findspikes(dt, membrane_potential, searchthreshold, 0, refractory_period)
+
+
+	spikeindices, _ = find_peaks(membrane_potential[0,:], height=0.01,distance=100)
+	spikeindices = np.expand_dims(spikeindices,axis=0)
+	if spikeindices.size >1:
+		spikeindices  = np.array(spikeindices[0,:],dtype=np.int32)
+		Nspikes = np.size(spikeindices)
+	else:
+		spikeindices  = np.array([spikeindices])
+		Nspikes = np.size(spikeindices)
+	thresholds = np.zeros_like(spikeindices,dtype=np.float32)
+
+	if thresholds.size >1:
+		thresholds[:] = np.nan
+	thresholdindices = np.zeros_like(spikeindices,dtype=np.float32)
+	if thresholdindices.size >1:
+
+		thresholdindices[:] = np.nan
+	
+	for ns in range(Nspikes):
+
+		if (spikeindices[ns] - windown[0])>0:
+
+			nn =np.arange(int(spikeindices[ns] - windown[0]),int(spikeindices[ns]+windown[1]),dtype = np.int64)
+		elif (spikeindices[ns] - windown[1])>0:
+			nn = np.arange(1,spikeindices[ns]+windown[1],dtype = np.int64)
+		else:
+			thresholdindices[ns] = 1
+			thresholds[ns] = np.nan
+			continue
+
+		vm_rel = membrane_potential[0,nn]
+		for nd in range(Nder):
+			threshold_temp = np.array(derthreshold)[nd,1]
+			der = DerMat[nd,nn]
+			vm_rel[der<threshold_temp]= np.nan
+
+
+		thresholdindex = np.where(~np.isnan(vm_rel))
+		# print(thresholdindex)
+		if thresholdindex[0].size>0:
+			thresholdindices[ns] = spikeindices[ns]-windown[0]+thresholdindex[0][0]
+			thresholds[ns] = vm_rel[thresholdindex[0][0]]
+			if thresholds[ ns]>0.0:
+				thresholds[ns] = np.nan
+			elif thresholds[ns] <-0.08:
+				thresholds[ns] = np.nan
+		else:
+			thresholds[ns] = np.nan
+	if len(np.array(spikeindices,dtype=np.int32))>1:
+		return np.array(spikeindices,dtype=np.int32), thresholds, np.array(thresholdindices,dtype=np.int32)
+	else:
+		return np.array(spikeindices,dtype=np.int32)[0][0], thresholds[0][0], np.array(thresholdindices,dtype=np.int32)[0][0]
+
+def collect_all_spike_data(path_cc, df_CC_exp , condition):
+    """_summary_
+
+    Args:
+        condition (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    dt = 1/20000
+    searchthreshold = 0
+    thresholdwindow = [1, 0.25]
+    refractory_period = 3
+    derthreshold = [[1, 0.000008], [2, 0.000008]]
+    # nwindow = [np.round(thresholdwindow[0]*dt), np.round(thresholdwindow[1]/dt)]
+    nwindow = [30, 70]
+    cond = condition
+    file_cond = df_CC_exp[df_CC_exp['condition'] ==
+                          cond][df_CC_exp['drug'] == False]['CC_files']
+    file_cond_acsf = df_CC_exp[df_CC_exp['condition']
+                               == cond][df_CC_exp['drug'] == True]['CC_files']
+
+    # print(len(file_cond),len(file_cond_acsf))
+    files_with_spks_and_thresholds_drug = []
+    files_with_spks_and_thresholds_acsf = []
+    # print(file_cond_acsf)
+    for drug_file, acsf_file in zip(np.array(file_cond), np.array(file_cond_acsf)):
+        print(drug_file)
+        I_means_drug = []
+        spikes_and_thrs_drug = []
+        value_dict_drug = returnVsandIs(path_cc , drug_file)
+        if check_for_faultycell(value_dict_drug, drug_file):
+            print('faulty')
+            pass
+        else:
+            if len(value_dict_drug.keys()) == 1:
+                for i in value_dict_drug['1']['I']:
+                    I_means_drug.append(np.mean(i))
+            else:
+                for k, vals in value_dict_drug.items():
+                    tempI = []
+                    for j in vals['I']:
+                        tempI.append(np.mean(j))
+                    I_means_drug.append(tempI)
+            try:
+                for trial, vals in value_dict_drug.items():
+                    spikes_and_thrs_trials = []
+                    for steps in vals['V']:
+                        V = steps
+                        if drug_file == 'NC_16-8-17-E1-CCSTEP-DRUG.mat':
+                            plt.plot(V)
+                            plt.show()
+
+                        spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(
+                            V, axis=1), dt=dt, searchthreshold=searchthreshold, windown=nwindow, refractory_period=refractory_period, derthreshold=derthreshold)
+                        spikes_and_thrs_trials.append({'spks': spk_ind,
+                                                       'thrs': thr,
+                                                       'thr_ind': thr_ind})
+                    spikes_and_thrs_drug.append(spikes_and_thrs_trials)
+            except:
+                print('problem with '+drug_file)
+            files_with_spks_and_thresholds_drug.append(
+                {'avg_I': I_means_drug, 'spike_info': spikes_and_thrs_drug, 'filename': drug_file})
+
+        I_means_acsf = []
+        spikes_and_thrs_acsf = []
+
+        value_dict_acsf = returnVsandIs(path_cc, acsf_file)
+        if check_for_faultycell(value_dict_acsf, acsf_file):
+            pass
+        else:
+            if len(value_dict_acsf.keys()) == 1:
+                for i in value_dict_acsf['1']['I']:
+                    I_means_acsf.append(np.mean(i))
+            else:
+                for k, vals in value_dict_acsf.items():
+                    tempI = []
+                    for j in vals['I']:
+                        tempI.append(np.mean(j))
+                    I_means_acsf.append(tempI)
+            try:
+
+                for trial, vals in value_dict_acsf.items():
+                    spikes_and_thrs_trials = []
+                    for steps in vals['V']:
+                        V = steps
+                        spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(
+                            V, axis=1), dt=dt, searchthreshold=searchthreshold, windown=nwindow, refractory_period=refractory_period, derthreshold=derthreshold)
+                        spikes_and_thrs_trials.append({'spks': spk_ind,
+                                                       'thrs': thr,
+                                                       'thr_ind': thr_ind})
+                    spikes_and_thrs_acsf.append(spikes_and_thrs_trials)
+            except:
+                print('problem with '+acsf_file)
+
+            files_with_spks_and_thresholds_acsf.append(
+                {'avg_I': I_means_acsf, 'spike_info': spikes_and_thrs_acsf, 'filename': acsf_file})
+    return [files_with_spks_and_thresholds_drug, files_with_spks_and_thresholds_acsf]
+
+def collect_singlecell_spike_data(path_cc, filename ):
+    """_summary_
+
+    Args:
+        condition (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    dt = 1/20000
+    searchthreshold = 0
+    thresholdwindow = [1, 0.25]
+    refractory_period = 3
+    derthreshold = [[1, 0.000008], [2, 0.000008]]
+    nwindow = [30, 70]
+    drug_file =filename
+    files_with_spks_and_thresholds_drug = []
+    files_with_spks_and_thresholds_acsf = []
+    spikes_and_thrs_drug = []
+    value_dict_drug = returnVsandIs(path_cc , drug_file)
+
+    if check_for_faultycell(value_dict_drug, drug_file):
+        return 'faulty'
+    else:
+        try:
+            for trial, vals in value_dict_drug.items():
+                spikes_and_thrs_trials = []
+                for steps in vals['V']:
+                    V = steps
+                    spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(
+                        V, axis=1), dt=dt, searchthreshold=searchthreshold, windown=nwindow, refractory_period=refractory_period, derthreshold=derthreshold)
+                    
+                    spikes_and_thrs_trials.append({'spks': spk_ind.flatten(),'thrs': thr.flatten(),'thr_ind': thr_ind.flatten()})
+                spikes_and_thrs_drug.append(spikes_and_thrs_trials)
+            return spikes_and_thrs_drug
+        except:
+            print('problem with '+drug_file)
+            return 'faulty' 
+
+def return_name_date_exp_fn(string):
+    if 'NC' in string:
+        string_broken = string.split('_')
+        name = string_broken[0]
+        date = string_broken[1]
+        exp = string_broken[-1]
+        year = date[:2]
+        month = date[2:4]
+
+        if month[0] == '0':
+            month = month[1]
+        day = date[4:]
+        if day[0] == '0':
+            day = day[1]
+        date = day+month+year
+        return name+'_'+date+'_'+exp
+    elif 'xuan' in string:
+        broken_str = string.split('_')
+        name = broken_str[0]
+        date = broken_str[1].replace('-', '')
+        exp = broken_str[2]
+        return name+'_'+date+'_'+exp
+    elif 'asli' in string:
+        broken_str = string.split('_')
+        name = broken_str[0]
+        date = broken_str[1].replace('-', '')
+        exp = broken_str[2]
+        return name+'_'+date+'_'+exp
+    elif 'Payam' in string:
+        broken_str = string.split('_')
+        name = broken_str[0].lower()
+        date = broken_str[1].split('-')
+        exp = broken_str[2]
+        day = date[0]
+        month = date[1]
+        year = date[2]
+        if day[0] == '0':
+            day = day[1]
+        date = day+month+year
+        return name+'_'+date+'_'+exp
+
+class Ephys_CC:
+    def __init__(self,VI_data,spikedata):
+        self.V_I_data = VI_data
+        self.spikedata = spikedata
+        self.onset = 2003  
+        self.offset = 12002
+
+    def get_current_at_first_spike(self):
+        spike_inds = []
+        # for trial in self.spikedata:
+        spike_ind = 0
+        spike_ind_val = 0
+        for ind, each in enumerate(self.spikedata):
+            if len(each['spks'])>0:
+                spike_ind = ind
+                spike_ind_val = each['spks'][0]
+                break
+        spike_inds.append({str(spike_ind):spike_ind_val})  
+        # print(spike_inds)            
+        I_s = []
+        for ind1,ind2 in enumerate(spike_inds):
+
+            I_s.append(self.V_I_data['I'][int(list(ind2.keys())[0])][ind2[list(ind2.keys())[0]]])
+        return I_s[0]
+
+    def get_AP_count(self):
+        spike_inds = []
+        # for trial in self.spikedata:
+        spike_inds  = len(self.spikedata[-1]['spks'])
+        return spike_inds
+
+
+    def get_abs_firing_rate(self):
+        time = self.offset-self.onset
+
+        fr = len(self.spikedata[-1]['spks'])/(time/20)
+        return fr
+
+    def get_inst_firing_rate(self):
+        isi = []
+
+        isi = np.diff(self.spikedata[-1]['spks'])/20
+        inst_fr = np.mean(1/isi)                  
+        return inst_fr
+
+    def get_time_to_first_spike(self):
+
+        spike_ind = 0
+        spike_ind_val = 0
+        for ind, each in enumerate(self.spikedata):
+            if len(each['spks'])>0:
+                spike_ind = ind
+                spike_ind_val = each['spks'][0]-self.onset
+                break
+        spike_inds = spike_ind_val/20  
+
+        return spike_inds     
+
+    def get_isi_stats(self):
+        isi = []
+
+        isi = np.diff(self.spikedata[-1]['spks'])/20
+        mean_isi = np.mean(isi)
+        max_isi = np.max(isi)
+        min_isi = np.min(isi)
+        median_isi = np.median(isi)                    
+        return mean_isi,max_isi,min_isi,median_isi    
+
+    def get_threshold_stats(self):
+        thrs = []
+        # if len(self.spikedata)>1:
+        #     for trial in self.spikedata:
+        #         thrs.append(trial[-1]['thrs'])
+        #     mean_thrs = [np.nanmean(i) for i in thrs]
+        #     max_thrs = [np.max(i) for i in thrs]
+        #     min_thrs = [np.min(i) for i in thrs]
+        #     median_thrs = [np.median(i) for i in thrs] 
+        # else:
+            
+        thrs = self.spikedata[-1]['thrs']
+        mean_thrs = np.nanmean(thrs)
+        max_thrs = np.nanmax(thrs)
+        min_thrs = np.nanmin(thrs)
+        median_thrs = np.nanmedian(thrs)                    
+        return thrs[0], mean_thrs,max_thrs,min_thrs,median_thrs      
+
+    def get_halfwidth_stats(self):
+        hwidths = []
+        # if len(self.spikedata)>1:
+        #     for indt,trial in enumerate(self.spikedata):
+        #         hwidths_sp = []
+
+        #         for ind, step in enumerate(trial):
+        #             if len(step['spks'])>0:
+        #                 for sp,thr in zip(step['spks'],step['thr_ind']):
+        #                     V = self.V_I_data['1']['V'][ind]
+        #                     half_amp = (V[sp]+V[thr])/2
+        #                     half_width = np.where(V[thr:thr+100]>=half_amp)[0]
+        #                     hwidths_sp.append(len(half_width)/20)
+        #                 break
+        #         hwidths.append(hwidths_sp)        
+        # else:
+        hwidths = []
+        for ind, step in enumerate(self.spikedata):
+            if len(step['spks'])>1:
+                for sp,thr in zip(step['spks'],step['thr_ind']):
+                    V = self.V_I_data['V'][ind]
+                    half_amp = (V[sp]+V[thr])/2
+                    half_width = np.where(V[thr:thr+100]>=half_amp)[0]
+                    hwidths.append(len(half_width)/20)
+                break
+        return hwidths[0], np.mean(hwidths),np.median(hwidths),np.max(hwidths),np.min(hwidths)   
+
+    def get_amplitude_stats(self):
+        amp = []
+        # if len(self.spikedata)>1:
+        #     for indt,trial in enumerate(self.spikedata):
+        #         amp_ = []
+        #         for ind, step in enumerate(trial):
+        #             if len(step['spks'])>0:
+        #                 for sp in step['spks']:
+        #                     V = self.V_I_data[str(indt+1)]['V'][ind]
+        #                     arg_ahp = sp+np.argmin(V[sp:sp+100])
+        #                     # plt.plot(V[sp:sp+100])
+        #                     # plt.scatter(np.argmin(V[sp:sp+100]),V[np.argmin(V[sp:sp+100])])
+        #                     amp_i = V[sp]-V[arg_ahp]
+        #                     amp_.append(amp_i)
+        #                 break
+        #         amp.append(amp_)        
+        # else:
+        amp_ = []
+        for ind, step in enumerate(self.spikedata):
+            if len(step['spks'])>0:
+                for sp in step['spks']:
+                    V = self.V_I_data['V'][ind]
+                    arg_ahp = sp+np.argmin(V[sp:sp+100])
+                    # plt.plot(V[sp:sp+100])
+                    # plt.scatter(np.argmin(V[sp:sp+100]),V[np.argmin(V[sp:sp+100])])
+                    amp_i = V[sp]-V[arg_ahp]
+                    amp_.append(amp_i)
+                break
+        amp.append(amp_)        
+        return amp[0][0], np.mean(amp),np.median(amp),np.max(amp),np.min(amp)    
+
+    def get_all_ephys_vals(self):
+        current_first_spike = self.get_current_at_first_spike()
+        ap_count = self.get_AP_count()
+        abs_firing_rate = self.get_abs_firing_rate()
+        inst_firing_rate = self.get_inst_firing_rate()
+        time_to_first_spike = self.get_time_to_first_spike()
+        mean_isi,max_isi,min_isi,median_isi = self.get_isi_stats() 
+        first_thrs,mean_thrs,max_thrs,min_thrs,median_thrs = self.get_threshold_stats()
+
+        first_hwidths,mean_hwidths,median_hwidths,max_hwidths,min_hwidths = self.get_halfwidth_stats()
+        first_amp,mean_amp,median_amp,max_amp,min_amp = self.get_amplitude_stats()
+        return [current_first_spike,ap_count,abs_firing_rate,
+                inst_firing_rate,time_to_first_spike,mean_isi,max_isi,
+                min_isi,median_isi,first_thrs,mean_thrs,
+                max_thrs,min_thrs,median_thrs,first_hwidths,
+                mean_hwidths,median_hwidths,max_hwidths,
+                min_hwidths,first_amp,mean_amp,median_amp,max_amp,min_amp]
+
+def return_all_ephys_cc(path_cc,df_cc):
+    df_cc = df_cc[df_cc.all_cc_names_and_dates==df_cc.fn_matches]
+    file_cond = list(df_cc['CC_files'])
+    cond = list(df_cc['condition'])
+    drug = list(df_cc['drug'])
+    exp_name = list(df_cc['all_cc_names_and_dates'] )
+    all_cc = []
+    prob_cell = []
+    for ind_, f in enumerate(file_cond):
+        try:
+            VI_data = returnVsandIs(path_cc,f) 
+            spikedata = collect_singlecell_spike_data(path_cc,f)
+            all_cc_trial = []
+            for ind,VI_data_ in enumerate(VI_data):
+                # print(VI_data[VI_data_])
+                ephys = Ephys_CC(VI_data[VI_data_],spikedata[ind])
+                ephys_set_i = ephys.get_all_ephys_vals()
+                ephys_set_i.append(cond[ind_])
+                ephys_set_i.append(drug[ind_])
+                ephys_set_i.append(exp_name[ind_])
+                ephys_set_i.append(ind)
+
+                all_cc_trial.append(ephys_set_i)
+            all_cc.append(all_cc_trial)
+        except:
+            print('problem with inside '+f)
+            prob_cell.append(f)
+    return all_cc,prob_cell
+
+
+# %%
+all_data_cc,probcell = return_all_ephys_cc(path_cc,df_acsf)
+# %%
+
+f = 'NC_10-10-17-E4-CCSTEP-NODRUG.mat' 
+ephys = Ephys_CC(path_cc,f)
+ephys_set_i = ephys.get_all_ephys_vals()
+ephys_set_i
+# %%
