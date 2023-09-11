@@ -28,7 +28,7 @@ from ephys_set import return_all_ephys_dict
 import pickle
 from PCA import * 
 import umap.umap_ as umap
-#%%
+
 def plot_UMAP(data_inh,data_exc,c_exc,c_inh,neighbours,distance,condition_inh,condition_exc,figsize=None,random_state=0,save=False):
     """plots UMAP for excitatory and inhibitory cells 
 
@@ -182,4 +182,3 @@ def plot_UMAP_combined(data_exc,data_inh,neighbours,distance,labels,random_state
   
     plt.show()
 
-# %%

@@ -12,14 +12,18 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pickle as pkl 
 from scipy.signal import find_peaks
+import sys
+sys.path.append('C:/Users/Nishant Joshi/Downloads/Old_code/repo/single_cell_analysis/scripts')
+
+from utils import *
 
 #%%
-
+path_cc_NC = 'D:/NC_CC_files/mat_analyzed/'
 all_cc = pd.read_csv("G:\My Drive\lists\Verification_list_all_CC_FN.csv")
 path_cc = 'G:/My Drive/Step-and-Hold Protocol (Xuan, Asli, NC, Payam)/'
 df_acsf = all_cc[all_cc.drug==False]
-#%%
 
+#%%
 
 def get_threshold_fontaine(membrane_potential, dt, searchthreshold, windown, refractory_period=0, derthreshold=[1,5], plotyn=0): 
 
@@ -200,8 +204,8 @@ def returnVsandIs(path_cc: str, filename: str)->dict:
             return data
     data = loadmat(path_cc+filename)
     keys = data.keys()
-    keys = list(keys)[3:]
 
+    keys = list(keys)[3:]
     trials = len(keys)//20
     return_dict = {}
     trial_steps = []
@@ -209,18 +213,62 @@ def returnVsandIs(path_cc: str, filename: str)->dict:
         trial_step = order_list(
             keys[len(keys)//trials*(t):len(keys)//trials*(t+1)])
         trial_steps.append(trial_step)
-
     return_dict = {}
     for ind_trial, trial in enumerate(trial_steps):
         Is, tI, Vs, tV = [], [], [], []
         for index, step in enumerate(trial):
             if step[-1] == '2':
+                print(step[-3])
                 Vs.append(data[step][:, 1])
                 tV.append(data[step][:, 0])
             elif step[-1] == '1':
                 Is.append(data[step][:, 1])
                 tI.append(data[step][:, 0])
         return_dict[str(ind_trial+1)] = {'V': Vs, 'I': Is, 'tV': tV, 'tI': tI}
+    return return_dict
+
+def returnVsandIs_analyzed(path_cc: str, filename: str)->dict:
+    """ returns all the Vs and Is combined for all steps  
+
+    Args:
+        path_cc (str): path to all CC files 
+        filename (str): filename
+
+    Returns:
+        dict: a dictionary object containing all Vs and Is for all steps 
+    """
+    def order_list(data):
+        if data[0][-3] == '0':
+            temp_list = data[2:]
+            rear_vals = data[:2]
+            return list(temp_list)+list(rear_vals)
+        else:
+            return data
+    data = loadmatInPy(path_cc+filename)
+    keys = data['out']['data']['tracename']
+    trials = len(keys)//20
+    data = data['out']['data']['values']
+    all_dat = {}
+    for i,j in enumerate(keys):
+        all_dat[j] = data[i]
+    als = len(keys)//20
+    return_dict = {}
+    trial_steps = []
+    for t in range(trials):
+        trial_step = order_list(keys[len(keys)//trials*(t):len(keys)//trials*(t+1)])
+        trial_steps.append(trial_step)
+
+    return_dict = {}
+    for ind_trial, trial in enumerate(trial_steps):
+        Is, tI, Vs, tV = [], [], [], []
+        for index, step in enumerate(trial):
+            if step[-1] == '2':
+                Vs.append(all_dat[step][:, 1])
+                tV.append(all_dat[step][:, 0])
+            elif step[-1] == '1':
+                Is.append(all_dat[step][:, 1])
+                tI.append(all_dat[step][:, 0])
+        return_dict[str(ind_trial+1)] = {'V': Vs, 'I': Is, 'tV': tV, 'tI': tI}     
     return return_dict
 
 def plot_steps(path_cc,filename):
@@ -375,7 +423,7 @@ def get_threshold_fontaine(membrane_potential, dt, searchthreshold, windown, ref
 	else:
 		return np.array(spikeindices,dtype=np.int32)[0][0], thresholds[0][0], np.array(thresholdindices,dtype=np.int32)[0][0]
 
-def collect_all_spike_data(path_cc, df_CC_exp , condition):
+def collect_all_spike_data(path_cc, df_CC_exp ,condition,already_analyzed):
     """_summary_
 
     Args:
@@ -406,6 +454,7 @@ def collect_all_spike_data(path_cc, df_CC_exp , condition):
         I_means_drug = []
         spikes_and_thrs_drug = []
         value_dict_drug = returnVsandIs(path_cc , drug_file)
+             
         if check_for_faultycell(value_dict_drug, drug_file):
             print('faulty')
             pass
@@ -474,7 +523,7 @@ def collect_all_spike_data(path_cc, df_CC_exp , condition):
                 {'avg_I': I_means_acsf, 'spike_info': spikes_and_thrs_acsf, 'filename': acsf_file})
     return [files_with_spks_and_thresholds_drug, files_with_spks_and_thresholds_acsf]
 
-def collect_singlecell_spike_data(path_cc, filename ):
+def collect_singlecell_spike_data(path_cc, filename,already_analyzed ):
     """_summary_
 
     Args:
@@ -493,8 +542,11 @@ def collect_singlecell_spike_data(path_cc, filename ):
     files_with_spks_and_thresholds_drug = []
     files_with_spks_and_thresholds_acsf = []
     spikes_and_thrs_drug = []
-    value_dict_drug = returnVsandIs(path_cc , drug_file)
-
+    if already_analyzed== False:
+        value_dict_drug = returnVsandIs(path_cc , drug_file)
+    else:
+        value_dict_drug = returnVsandIs_analyzed(path_cc , drug_file)
+            
     if check_for_faultycell(value_dict_drug, drug_file):
         return 'faulty'
     else:
@@ -716,18 +768,18 @@ class Ephys_CC:
                 mean_hwidths,median_hwidths,max_hwidths,
                 min_hwidths,first_amp,mean_amp,median_amp,max_amp,min_amp]
 
-def return_all_ephys_cc(path_cc,df_cc):
+def return_all_ephys_cc(path_cc,df_cc,already_analyzed):
     df_cc = df_cc[df_cc.all_cc_names_and_dates==df_cc.fn_matches]
     file_cond = list(df_cc['CC_files'])
     cond = list(df_cc['condition'])
     drug = list(df_cc['drug'])
-    exp_name = list(df_cc['all_cc_names_and_dates'] )
+    exp_name = list(df_cc['all_cc_names_and_dates'])
     all_cc = []
     prob_cell = []
     for ind_, f in enumerate(file_cond):
         try:
             VI_data = returnVsandIs(path_cc,f) 
-            spikedata = collect_singlecell_spike_data(path_cc,f)
+            spikedata = collect_singlecell_spike_data(path_cc,f,already_analyzed)
             all_cc_trial = []
             for ind,VI_data_ in enumerate(VI_data):
                 # print(VI_data[VI_data_])
@@ -745,13 +797,37 @@ def return_all_ephys_cc(path_cc,df_cc):
             prob_cell.append(f)
     return all_cc,prob_cell
 
+def return_all_ephys_cc_analyzed(path_cc, already_analyzed):
+    files  = os.listdir(path_cc) 
+    all_cc = []
+    prob_cell = []
+    for ind_, f in enumerate(files):
+        try:
+            VI_data = returnVsandIs_analyzed(path_cc,f) 
+            spikedata = collect_singlecell_spike_data(path_cc,f,already_analyzed)
+            all_cc_trial = []
+            for ind,VI_data_ in enumerate(VI_data):
+                # print(VI_data[VI_data_])
+                ephys = Ephys_CC(VI_data[VI_data_],spikedata[ind])
+
+                ephys_set_i = ephys.get_all_ephys_vals()
+                if len(set(np.isnan(ephys_set_i)))>1:
+                    print(ephys_set_i)
+                    pass
+                else:
+                    ephys_set_i.append(ind+1)
+                    ephys_set_i.append(f)
+
+
+                # all_cc_trial.append(ephys_set_i)
+                all_cc.append(ephys_set_i)
+        except:
+            print('problem with inside '+f)
+            prob_cell.append(f)
+    return all_cc,prob_cell
+
 
 # %%
-all_data_cc,probcell = return_all_ephys_cc(path_cc,df_acsf)
-# %%
 
-f = 'NC_10-10-17-E4-CCSTEP-NODRUG.mat' 
-ephys = Ephys_CC(path_cc,f)
-ephys_set_i = ephys.get_all_ephys_vals()
-ephys_set_i
+data,prob  = return_all_ephys_cc_analyzed(path_cc_NC,True)
 # %%
