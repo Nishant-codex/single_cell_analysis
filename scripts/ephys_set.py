@@ -616,7 +616,6 @@ class EphysSet:
         return ephys_data
 
 
-
 class EphysSet_niccolo:
 
     def __init__(self,data,cond,exp_name,trialnr):

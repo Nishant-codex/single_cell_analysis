@@ -828,6 +828,11 @@ def return_all_ephys_cc_analyzed(path_cc, already_analyzed):
 
 
 # %%
-
 data,prob  = return_all_ephys_cc_analyzed(path_cc_NC,True)
 # %%
+features= ['current_first_spike','ap_count','abs_firing_rate',
+                'inst_firing_rate','time_to_first_spike','mean_isi','max_isi',
+                'min_isi','median_isi','first_thrs','mean_thrs',
+                'max_thrs','min_thrs','median_thrs','first_hwidths',
+                'mean_hwidths','median_hwidths','max_hwidths',
+                'min_hwidths','first_amp','mean_amp','median_amp','max_amp','min_amp','trialnr','filename']
