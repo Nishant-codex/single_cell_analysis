@@ -19,6 +19,7 @@ from utils import *
 
 #%%
 path_cc_NC = 'D:/NC_CC_files/mat_analyzed/'
+path_cc_NC_DB = 'D:/CurrentClamp/StepProtocol/'
 all_cc = pd.read_csv("G:\My Drive\lists\Verification_list_all_CC_FN.csv")
 path_cc = 'G:/My Drive/Step-and-Hold Protocol (Xuan, Asli, NC, Payam)/'
 df_acsf = all_cc[all_cc.drug==False]
@@ -268,6 +269,45 @@ def returnVsandIs_analyzed(path_cc: str, filename: str)->dict:
             elif step[-1] == '1':
                 Is.append(all_dat[step][:, 1])
                 tI.append(all_dat[step][:, 0])
+        return_dict[str(ind_trial+1)] = {'V': Vs, 'I': Is, 'tV': tV, 'tI': tI}     
+    return return_dict
+
+def returnVsandIs_analyzed_DB(path_cc: str, filename: str)->dict:
+    """ returns all the Vs and Is combined for all steps  
+
+    Args:
+        path_cc (str): path to all CC files 
+        filename (str): filename
+
+    Returns:
+        dict: a dictionary object containing all Vs and Is for all steps 
+    """
+    def order_list(data):
+        if data[0][-3] == '0':
+            temp_list = data[2:]
+            rear_vals = data[:2]
+            return list(temp_list)+list(rear_vals)
+        else:
+            return data
+    data = loadmat(path_cc+filename)
+    keys = list(data.keys())[3:]
+    trials = len(keys)//20
+    return_dict = {}
+    trial_steps = []
+    for t in range(trials):
+        trial_step = order_list(keys[len(keys)//trials*(t):len(keys)//trials*(t+1)])
+        trial_steps.append(trial_step)
+
+    return_dict = {}
+    for ind_trial, trial in enumerate(trial_steps):
+        Is, tI, Vs, tV = [], [], [], []
+        for index, step in enumerate(trial):
+            if step[-1] == '2':
+                Vs.append(data[step][:, 1])
+                tV.append(data[step][:, 0])
+            elif step[-1] == '1':
+                Is.append(data[step][:, 1])
+                tI.append(data[step][:, 0])
         return_dict[str(ind_trial+1)] = {'V': Vs, 'I': Is, 'tV': tV, 'tI': tI}     
     return return_dict
 
@@ -545,7 +585,7 @@ def collect_singlecell_spike_data(path_cc, filename,already_analyzed ):
     if already_analyzed== False:
         value_dict_drug = returnVsandIs(path_cc , drug_file)
     else:
-        value_dict_drug = returnVsandIs_analyzed(path_cc , drug_file)
+        value_dict_drug = returnVsandIs_analyzed_DB(path_cc , drug_file)
             
     if check_for_faultycell(value_dict_drug, drug_file):
         return 'faulty'
@@ -612,7 +652,8 @@ class Ephys_CC:
         self.spikedata = spikedata
         self.onset = 2003  
         self.offset = 12002
-
+ 
+         
     def get_current_at_first_spike(self):
         spike_inds = []
         # for trial in self.spikedata:
@@ -802,37 +843,93 @@ def return_all_ephys_cc_analyzed(path_cc, already_analyzed):
     all_cc = []
     prob_cell = []
     for ind_, f in enumerate(files):
-        try:
-            VI_data = returnVsandIs_analyzed(path_cc,f) 
-            spikedata = collect_singlecell_spike_data(path_cc,f,already_analyzed)
-            all_cc_trial = []
-            for ind,VI_data_ in enumerate(VI_data):
-                # print(VI_data[VI_data_])
-                ephys = Ephys_CC(VI_data[VI_data_],spikedata[ind])
+        if 'NC' in f:
+            print(f)
+            try:
+                VI_data = returnVsandIs_analyzed_DB(path_cc,f) 
+                spikedata = collect_singlecell_spike_data(path_cc,f,already_analyzed)
+                all_cc_trial = []
+                for ind,VI_data_ in enumerate(VI_data):
+                    # print(VI_data[VI_data_])
+                    ephys = Ephys_CC(VI_data[VI_data_],spikedata[ind])
 
-                ephys_set_i = ephys.get_all_ephys_vals()
-                if len(set(np.isnan(ephys_set_i)))>1:
-                    print(ephys_set_i)
-                    pass
-                else:
-                    ephys_set_i.append(ind+1)
-                    ephys_set_i.append(f)
+                    ephys_set_i = ephys.get_all_ephys_vals()
+                    if len(set(np.isnan(ephys_set_i)))>1:
+                        print(ephys_set_i)
+                        pass
+                    else:
+                        ephys_set_i.append(ind+1)
+                        ephys_set_i.append(f)
 
 
-                # all_cc_trial.append(ephys_set_i)
-                all_cc.append(ephys_set_i)
-        except:
-            print('problem with inside '+f)
-            prob_cell.append(f)
+                    # all_cc_trial.append(ephys_set_i)
+                    all_cc.append(ephys_set_i)
+            except:
+                print('problem with inside '+f)
+                prob_cell.append(f)
+
     return all_cc,prob_cell
 
+def get_waveforms(spikes,v):
+    waves = []
+    for i in spikes:
+        waves.append(v[i-60:i+60])
+    return np.mean(waves,axis=0) 
 
 # %%
-data,prob  = return_all_ephys_cc_analyzed(path_cc_NC,True)
+
+
+spiks = collect_singlecell_spike_data(path_CC,'170816_NC_111_CC.mat',True)
+
+
+VI = returnVsandIs_analyzed_DB(path_CC,'170816_NC_111_CC.mat')
+
+# plt.show()
 # %%
+
 features= ['current_first_spike','ap_count','abs_firing_rate',
-                'inst_firing_rate','time_to_first_spike','mean_isi','max_isi',
-                'min_isi','median_isi','first_thrs','mean_thrs',
-                'max_thrs','min_thrs','median_thrs','first_hwidths',
-                'mean_hwidths','median_hwidths','max_hwidths',
-                'min_hwidths','first_amp','mean_amp','median_amp','max_amp','min_amp','trialnr','filename']
+        'inst_firing_rate','time_to_first_spike','mean_isi',
+        'max_isi','min_isi','median_isi','first_thrs',
+        'mean_thrs','max_thrs','min_thrs','median_thrs',
+        'first_hwidths','mean_hwidths','median_hwidths',
+        'max_hwidths','min_hwidths','first_amp','mean_amp',
+        'median_amp','max_amp','min_amp','trialnr','filename']
+data
+# %%
+df = pd.DataFrame(data,columns=features)
+df.to_csv('D:/CurrentClamp/all_ephys_CC.csv')
+# %%
+plot_single_cell("D:/CurrentClamp/StepProtocol/","170713_NC_58_CC.mat",'stacked')
+
+# %%
+waves = []
+for i in os.listdir(path_cc_NC_DB):
+    if 'NC' in i:
+        exp = i[:-4]
+        try:
+            spiks = collect_singlecell_spike_data(path_CC,i,True)
+            VI = returnVsandIs_analyzed_DB(path_CC,i)
+            
+            for trial in range(len(spiks)):
+                wave = []
+                print(exp, trial)
+                wave.append(get_waveforms(spiks[trial][-1]['spks'],VI[str(trial+1)]['V'][-1]))
+                wave.append(trial+1)
+                wave.append(exp)
+                waves.append(wave)
+        except:
+             print(exp, 'is fauly')
+
+
+
+# %%
+
+
+feats = ['waveforms','exp_name','trial']
+df = pd.DataFrame(columns=feats)
+for i in range(len(waves)):
+    
+    df.loc[i,'waveforms'] = waves[i][0]
+    df.loc[i,['trial','data_wave_CC']] = waves[i][1:]
+df = df.dropna(axis=0)
+df.to_pickle('D:/CurrentClamp/CC_waveforms.pkl')

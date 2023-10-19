@@ -33,7 +33,7 @@
 # parameters{63} = 'AP Amplitude Mean - Start'; @
 # parameters{65} = 'AP Amplitude Median - Start'; @
 # parameters{67} = 'AP Amplitude AdaptationRate - Start';
-
+#%%
 import neo
 from quantities import *
 from elephant import statistics
@@ -596,4 +596,6 @@ class EphysSet:
                             self.cond,
                             self.trialnr] #
         return ephys_data
+
+#%%
 

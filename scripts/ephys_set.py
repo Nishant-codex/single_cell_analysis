@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 import seaborn as sns
+import os 
 from scipy.io import loadmat, savemat
 import matplotlib.pyplot as plt
 from scipy.sparse import data
@@ -20,44 +21,17 @@ from utils import *
 from analyze_single_cell import collect_drug_and_acsf
 from impedance import *
 from sklearn.linear_model import LinearRegression
-
-# parameters{1} = 'Current at first spike'; @
-# parameters{3} = 'AP Count - Start'; @
-# parameters{5} = 'Absolute Firing Rate - Start'; @
-# parameters{7} = 'Inst Firing Rate - Start'; @
-# parameters{9} = 'AP Latency First - Start'; @
-# parameters{11} = 'AP Latency Last - Start'; @
-# parameters{13} = 'AP Latency Window - Start';
-# parameters{15} = 'AP Latency Compression - Start';
-# parameters{17} = 'ISI Min - Start'; @
-# parameters{19} = 'ISI Max - Start'; @
-# parameters{21} = 'ISI Mean - Start'; @
-# parameters{23} = 'ISI Median - Start'; @
-# parameters{25} = 'ISI Adapt Rate - Start'; 
-# parameters{27} = 'AP Threshold First - Start'; @
-# parameters{29} = 'AP Threshold Last - Start'; @ 
-# parameters{31} = 'AP Threshold Min - Start'; @ 
-# parameters{33} = 'AP Threshold Max - Start'; @
-# parameters{35} = 'AP Threshold Mean - Start'; @
-# parameters{37} = 'AP Threshold Median - Start'; @
-# parameters{39} = 'AP Threshold AdaptationRate - Start';
-# parameters{41} = 'AP HalfWidth First - Start'; @
-# parameters{43} = 'AP HalfWidth Last - Start'; @
-# parameters{45} = 'AP HalfWidth Min - Start'; @
-# parameters{47} = 'AP HalfWidth Max - Start'; @
-# parameters{49} = 'AP HalfWidth Mean - Start'; @
-# parameters{51} = 'AP HalfWidth Median - Start'; @
-# parameters{53} = 'AP HalfWidth AdaptationRate - Start';
-# parameters{55} = 'AP Amplitude First - Start'; @
-# parameters{57} = 'AP Amplitude Last - Start'; @
-# parameters{59} = 'AP Amplitude Min - Start'; @
-# parameters{61} = 'AP Amplitude Max - Start'; @
-# parameters{63} = 'AP Amplitude Mean - Start'; @
-# parameters{65} = 'AP Amplitude Median - Start'; @
-# parameters{67} = 'AP Amplitude AdaptationRate - Start';
+import neo
+from quantities import *
+from elephant import statistics
+from elephant.kernels import GaussianKernel
+from elephant.statistics import isi, cv
+from elephant.statistics import time_histogram, instantaneous_rate
+from elephant import sta
 
 
 
+#%%
 class EphysSet:
 
     def __init__(self,data,cond,exp_name,trialnr):
@@ -615,7 +589,6 @@ class EphysSet:
                             self.trialnr] #
         return ephys_data
 
-
 class EphysSet_niccolo:
 
     def __init__(self,data,cond,exp_name,trialnr):
@@ -905,6 +878,19 @@ class EphysSet_niccolo:
                            self.trialnr] #
         return ephys_data
 
+    def get_sta(self):        
+
+            sampling_rate = 1/20
+            spks = self.data['spikeindices']*(sampling_rate)
+            V = self.V
+            I = self.I
+
+            spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
+            signal = neo.AnalogSignal(np.array([I]).T, units='pA',
+                                        sampling_rate=20/ms) 
+            sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0 * ms))
+            return sta_.magnitude   
+
 
 def test_single_exp(exp_name):
 
@@ -1081,6 +1067,19 @@ def return_all_ephys_dict():
     all_ephys_with_cond['cond'] = cond
     return all_ephys_with_cond
 
+def return_all_ephys_dict_with_just_files(path_to_analyzed_files):
+    files = os.listdir(path_to_analyzed_files)[1:]
+    all_ephys_data = []
+    for f in files:
+        data = loadmatInPy(path_to_analyzed_files+f)
+        for trial, instance in enumerate(data):
+                    cond = instance['input_generation_settings']['condition']
+                    # trialnr = instance['input_generation_settings']['trialnr']
+                    exp =  f[:-13]
+                    ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial)
+                    all_ephys_data.append(ephys_obj.get_ephys_vals())
+    return all_ephys_data
+
 def return_all_waveforms():
     """returns a dictonary with all the ephys properties for each cell for the 
     condition provided along with the aCSF counterpart. 
@@ -1149,6 +1148,145 @@ def return_all_waveforms():
     all_ephys_with_cond['inh'] = all_ephys_data_inh
     return all_ephys_with_cond
 
+def return_all_waveforms_DB(path):
+    """returns a dictonary with all the ephys properties for each cell for the 
+    condition provided along with the aCSF counterpart. 
+    Exc and inhibitory cells are segregated.
+    
+    Args:
+        cond (list): a list containing the condion to be analyzed
+        experimenter (str, optional): if a specific experimenter needs to aanlyzed seperately. Defaults to None.
+
+    Raises:
+        ValueError:  'condition should be a list even if a single value is provided'
+
+    Returns:
+        dict: dictionary containing all e-phys features for each cell  
+    """
+
+    waves_all  = [] 
+    files = os.listdir(path)[1:]
+    for f in files:
+
+        data = loadmatInPy(path +f)
+        exp = f[:-13]
+        print(exp)
+        waves = []
+        for trial,instance in enumerate(data):
+            cond = instance['input_generation_settings']['condition']
+            ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp,trialnr=trial)
+            waves = list(np.mean(ephys_obj.get_Vm(return_mean=False),axis=0))
+            waves.append(ephys_obj.cond)
+            waves.append(ephys_obj.exp_name)
+            waves.append(trial)
+        waves_all.append(waves)
+
+    return waves_all
+
+def return_all_STA_db(path):
+    """returns a dictonary with all the ephys properties for each cell for the 
+    condition provided along with the aCSF counterpart. 
+    Exc and inhibitory cells are segregated.
+    
+    Args:
+        cond (list): a list containing the condion to be analyzed
+        experimenter (str, optional): if a specific experimenter needs to aanlyzed seperately. Defaults to None.
+
+    Raises:
+        ValueError:  'condition should be a list even if a single value is provided'
+
+    Returns:
+        dict: dictionary containing all e-phys features for each cell  
+    """
+
+    sta_all  = [] 
+    files = os.listdir(path)[1:]
+    for f in files:
+
+        data = loadmatInPy(path +f)
+        exp = f[:-13]
+        print(exp)
+        sta = []
+        for trial,instance in enumerate(data):
+            cond = instance['input_generation_settings']['condition']
+            ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial)
+            sta = list(ephys_obj.get_sta())
+            sta.append(ephys_obj.cond)
+            sta.append(ephys_obj.exp_name)
+            sta.append(trial)
+        sta_all.append(sta)
+
+    return sta_all
+
+# %%
+# data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170628_NC_33_FN_analyzed.mat")
+# data = return_all_ephys_dict_with_just_files("D:/CurrentClamp/FN_analyzed/")
+# waves = return_all_waveforms_DB("D:/CurrentClamp/FN_analyzed/")
+# stas = return_all_STA_db("D:/CurrentCla mp/FN_analyzed/")
+#%%
+df = pd.DataFrame(columns=['sta','cond','exp_name','trial'])
+for i in range(len(stas)):
+    df.loc[i,'sta'] = np.array(np.hstack(stas[i])[:-3],dtype=np.float32)
+    df.loc[i,['cond','exp_name','trial']] = np.hstack(stas[i])[-3:] 
+df.to_pickle('D:/CurrentClamp/all_stas.pkl')
 
 # %%
 
+# feats = ['current_at_first_spike',
+# 'ap_count',
+# 'fr',
+# 'inst_fr',
+# 'time_to_first_spike',
+# 'mean_isi',
+# 'median_isi',
+# 'max_isi',
+# 'min_isi',
+# 'first_thr', 
+# 'mean_thr', 
+# 'median_thr', 
+# 'min_thr', 
+# 'max_thr',
+# 'mean_width',
+# 'median_width',
+# 'max_width',
+# 'min_width',
+# 'mean_amplitude',
+# 'median_amplitude',
+# 'min_amplitude',
+# 'max_amplitude',
+# 'exp_name',
+# 'cond',
+# 'trialnr'] #
+
+feats = ['waveforms','cond','exp_name','trial']
+# waves = np.vstack(waves)
+df = pd.DataFrame(columns=feats)
+# df['waveform'] = np.vstack(waves)[:,:-3]
+# df[['cond','exp_name','trial']] =  np.vstack(waves)[:,:-3]
+for i in range(len(waves)):
+    df.loc[i,'waveforms'] = np.array(waves[i,:-3],dtype=np.float32)
+    df.loc[i,['cond','exp_name','trial']] = waves[i,-3:]
+# df.to_csv('D:/CurrentClamp/all_waveforms.csv')
+
+# %%
+
+
+# %%
+data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170628_NC_33_FN_analyzed.mat")
+
+spks = data[0]['spikeindices']*(1/20)
+V = data[0]['membrane_potential']
+I = data[0]['input_current']
+sampling_rate = 1/20
+
+spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
+signal = neo.AnalogSignal(np.array([I]).T, units='pA',
+                            sampling_rate=20/ms) 
+
+sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0.01* ms))
+
+
+plt.plot(sta_.magnitude)
+
+
+# %%
