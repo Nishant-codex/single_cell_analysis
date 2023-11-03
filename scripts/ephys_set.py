@@ -1068,16 +1068,22 @@ def return_all_ephys_dict():
     return all_ephys_with_cond
 
 def return_all_ephys_dict_with_just_files(path_to_analyzed_files):
-    files = os.listdir(path_to_analyzed_files)[1:]
+    files = os.listdir(path_to_analyzed_files)
     all_ephys_data = []
     for f in files:
-        data = loadmatInPy(path_to_analyzed_files+f)
-        for trial, instance in enumerate(data):
-                    cond = instance['input_generation_settings']['condition']
-                    # trialnr = instance['input_generation_settings']['trialnr']
-                    exp =  f[:-13]
-                    ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial)
-                    all_ephys_data.append(ephys_obj.get_ephys_vals())
+        try:
+            data = loadmatInPy(path_to_analyzed_files+f)
+            for trial, instance in enumerate(data):
+                cond = instance['input_generation_settings']['condition']
+                # trialnr = instance['input_generation_settings']['trialnr']
+
+                exp =  f[:-13]
+                print(exp, trial, cond)
+                ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial)
+                all_ephys_data.append(ephys_obj.get_ephys_vals())
+        except:
+                print('problem with ',f[:-13])
+
     return all_ephys_data
 
 def return_all_waveforms():
@@ -1167,20 +1173,21 @@ def return_all_waveforms_DB(path):
     waves_all  = [] 
     files = os.listdir(path)[1:]
     for f in files:
-
-        data = loadmatInPy(path +f)
-        exp = f[:-13]
-        print(exp)
-        waves = []
-        for trial,instance in enumerate(data):
-            cond = instance['input_generation_settings']['condition']
-            ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp,trialnr=trial)
-            waves = list(np.mean(ephys_obj.get_Vm(return_mean=False),axis=0))
-            waves.append(ephys_obj.cond)
-            waves.append(ephys_obj.exp_name)
-            waves.append(trial)
-        waves_all.append(waves)
-
+        try:
+            data = loadmatInPy(path +f)
+            exp = f[:-13]
+            print(exp)
+            for trial,instance in enumerate(data):
+                waves = []
+                cond = instance['input_generation_settings']['condition']
+                ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp,trialnr=trial)
+                waves = list(np.mean(ephys_obj.get_Vm(return_mean=False),axis=0))
+                waves.append(ephys_obj.cond)
+                waves.append(ephys_obj.exp_name)
+                waves.append(trial)
+                waves_all.append(waves)
+        except:
+            print('problem with ',f[:-13])
     return waves_all
 
 def return_all_STA_db(path):
@@ -1202,33 +1209,35 @@ def return_all_STA_db(path):
     sta_all  = [] 
     files = os.listdir(path)[1:]
     for f in files:
-
-        data = loadmatInPy(path +f)
-        exp = f[:-13]
-        print(exp)
-        sta = []
-        for trial,instance in enumerate(data):
-            cond = instance['input_generation_settings']['condition']
-            ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial)
-            sta = list(ephys_obj.get_sta())
-            sta.append(ephys_obj.cond)
-            sta.append(ephys_obj.exp_name)
-            sta.append(trial)
-        sta_all.append(sta)
-
+        try:
+            data = loadmatInPy(path +f)
+            exp = f[:-13]
+            
+            for trial,instance in enumerate(data):
+                sta = []
+                cond = instance['input_generation_settings']['condition']
+                print(exp, trial, cond)
+                ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial)
+                sta = list(ephys_obj.get_sta())
+                sta.append(ephys_obj.cond)
+                sta.append(ephys_obj.exp_name)
+                sta.append(trial)
+                sta_all.append(sta)
+        except:
+            print('problem with ',f[:-13])
     return sta_all
 
 # %%
 # data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170628_NC_33_FN_analyzed.mat")
-# data = return_all_ephys_dict_with_just_files("D:/CurrentClamp/FN_analyzed/")
-# waves = return_all_waveforms_DB("D:/CurrentClamp/FN_analyzed/")
-# stas = return_all_STA_db("D:/CurrentCla mp/FN_analyzed/")
+data = return_all_ephys_dict_with_just_files("D:/Analyzed/")
+# waves = return_all_waveforms_DB("D:/Analyzed/")
+# stas = return_all_STA_db("D:/Analyzed/")
 #%%
 df = pd.DataFrame(columns=['sta','cond','exp_name','trial'])
 for i in range(len(stas)):
     df.loc[i,'sta'] = np.array(np.hstack(stas[i])[:-3],dtype=np.float32)
     df.loc[i,['cond','exp_name','trial']] = np.hstack(stas[i])[-3:] 
-df.to_pickle('D:/CurrentClamp/all_stas.pkl')
+df.to_pickle('D:/CurrentClamp/all_stas_entire.pkl')
 
 # %%
 
@@ -1264,11 +1273,13 @@ df = pd.DataFrame(columns=feats)
 # df['waveform'] = np.vstack(waves)[:,:-3]
 # df[['cond','exp_name','trial']] =  np.vstack(waves)[:,:-3]
 for i in range(len(waves)):
-    df.loc[i,'waveforms'] = np.array(waves[i,:-3],dtype=np.float32)
-    df.loc[i,['cond','exp_name','trial']] = waves[i,-3:]
-# df.to_csv('D:/CurrentClamp/all_waveforms.csv')
+    print(i)
+    df.loc[i,'waveforms'] = np.float32(np.array(waves)[i,:-3])
+    df.loc[i,['cond','exp_name','trial']] = np.array(waves)[i,-3:]
+df.to_pickle('D:/CurrentClamp/all_waveforms_entire.pkl')
 
 # %%
+df.to_csv('D:/CurrentClamp/all_waveforms_entire.pkl')
 
 
 # %%
@@ -1279,14 +1290,51 @@ V = data[0]['membrane_potential']
 I = data[0]['input_current']
 sampling_rate = 1/20
 
-spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
-signal = neo.AnalogSignal(np.array([I]).T, units='pA',
-                            sampling_rate=20/ms) 
+# spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
+# signal = neo.AnalogSignal(np.array([I]).T, units='pA',
+#                             sampling_rate=20/ms) 
 
-sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0.01* ms))
-
-
-plt.plot(sta_.magnitude)
+# sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0.01* ms))
 
 
+# plt.plot(sta_.magnitude)
+for i in data[0]['spikeindices'][:10]:
+    plt.plot(I[data[0]['spikeindices'][i]-100*20:data[0]['spikeindices'][i]])
+
+
+# %%
+
+
+feats = ['current_at_first_spike',
+'ap_count',
+'fr',
+'inst_fr',
+'time_to_first_spike',
+'mean_isi',
+'median_isi',
+'max_isi',
+'min_isi',
+'first_thr', 
+'mean_thr', 
+'median_thr', 
+'min_thr', 
+'max_thr',
+'mean_width',
+'median_width',
+'max_width',
+'min_width',
+'mean_amplitude',
+'median_amplitude',
+'min_amplitude',
+'max_amplitude',
+'exp_name',
+'cond',
+'trialnr'] #
+
+df = pd.DataFrame(columns=feats)
+
+for i in range(len(data)):
+    print(i)
+    df.loc[i,] = data[i]
+    # df.loc[i,['cond','exp_name','trial']] = np.array(waves)[i,-3:]
 # %%
