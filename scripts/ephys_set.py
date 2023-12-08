@@ -599,6 +599,8 @@ class EphysSet_niccolo:
         self.trialnr = trialnr
         self.V = self.data['membrane_potential']
         self.I = self.data['input_current']
+        self.h = self.data['hidden_state']
+
         self.dt = 1/20 
 
     def remove_nan(self,data):
@@ -890,6 +892,19 @@ class EphysSet_niccolo:
                                         sampling_rate=20/ms) 
             sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0 * ms))
             return sta_.magnitude   
+    
+    def get_sta_h(self):        
+
+        sampling_rate = 1/20
+        spks = self.data['spikeindices']*(sampling_rate)
+        h = self.h
+        V = self.V
+
+        spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
+        signal = neo.AnalogSignal(np.array([h]).T, units='pA',
+                                    sampling_rate=20/ms) 
+        sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0 * ms))
+        return sta_.magnitude   
 
 
 def test_single_exp(exp_name):
@@ -1227,17 +1242,57 @@ def return_all_STA_db(path):
             print('problem with ',f[:-13])
     return sta_all
 
+def return_all_STA_h_db(path):
+    """returns a dictonary with all the ephys properties for each cell for the 
+    condition provided along with the aCSF counterpart. 
+    Exc and inhibitory cells are segregated.
+    
+    Args:
+        cond (list): a list containing the condion to be analyzed
+        experimenter (str, optional): if a specific experimenter needs to aanlyzed seperately. Defaults to None.
+
+    Raises:
+        ValueError:  'condition should be a list even if a single value is provided'
+
+    Returns:
+        dict: dictionary containing all e-phys features for each cell  
+    """
+
+    sta_all  = [] 
+    files = os.listdir(path)[1:]
+    for f in files:
+        try:
+            data = loadmatInPy(path +f)
+            exp = f[:-13]
+            
+            for trial,instance in enumerate(data):
+                sta = []
+                cond = instance['input_generation_settings']['condition']
+                print(exp, trial, cond)
+                ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial)
+                sta = list(ephys_obj.get_sta_h())
+                sta.append(ephys_obj.cond)
+                sta.append(ephys_obj.exp_name)
+                sta.append(trial)
+                sta_all.append(sta)
+        except:
+            print('problem with ',f[:-13])
+
+    return sta_all
+
 # %%
 # data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170628_NC_33_FN_analyzed.mat")
-data = return_all_ephys_dict_with_just_files("D:/Analyzed/")
+# data = return_all_ephys_dict_with_just_files("D:/Analyzed/")
 # waves = return_all_waveforms_DB("D:/Analyzed/")
 # stas = return_all_STA_db("D:/Analyzed/")
+stas = return_all_STA_h_db("D:/Analyzed/")
+
 #%%
 df = pd.DataFrame(columns=['sta','cond','exp_name','trial'])
 for i in range(len(stas)):
     df.loc[i,'sta'] = np.array(np.hstack(stas[i])[:-3],dtype=np.float32)
     df.loc[i,['cond','exp_name','trial']] = np.hstack(stas[i])[-3:] 
-df.to_pickle('D:/CurrentClamp/all_stas_entire.pkl')
+df.to_pickle('D:/CurrentClamp/all_stas_hidden.pkl')
 
 # %%
 
