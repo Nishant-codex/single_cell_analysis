@@ -1353,8 +1353,8 @@ sampling_rate = 1/20
 
 
 # plt.plot(sta_.magnitude)
-for i in data[0]['spikeindices'][:10]:
-    plt.plot(I[data[0]['spikeindices'][i]-100*20:data[0]['spikeindices'][i]])
+# for i in data[0]['spikeindices'][:10]:
+#     plt.plot(I[data[0]['spikeindices'][i]-100*20:data[0]['spikeindices'][i]])
 
 
 # %%
