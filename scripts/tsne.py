@@ -24,7 +24,7 @@ from PCA import shuffle_prams
 from matplotlib.ticker import NullFormatter
 from sklearn import manifold, datasets
 from analyze_single_cell import collect_drug_and_acsf
-from ephys_set import return_all_ephys_dict
+from single_cell_analysis.scripts.FN_ephys_features import return_all_ephys_dict
 from PCA import *
 #%%
 def plot_tsne(data_inh:dict,data_exc:dict):
