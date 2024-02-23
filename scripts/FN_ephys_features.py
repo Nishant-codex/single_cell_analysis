@@ -104,7 +104,7 @@ class EphysSet:
         thr_ind = thr_ind[ind]
 
         for i, j in zip(thr_ind, thr):
-            Vm.append(V[int(i)-70:int(i)+100])
+            Vm.append(V[int(i)-20*4:int(i)+20*5])
         if return_mean:
             return np.mean(Vm), Vm, np.mean(V)
         else:
@@ -600,7 +600,7 @@ class EphysSet_niccolo:
         self.V = self.data['membrane_potential']
         self.I = self.data['input_current']
         self.h = self.data['hidden_state']
-
+        self.tau = self.data['input_generation_settings']['tau']
         self.dt = 1/20 
 
     def remove_nan(self,data):
@@ -615,7 +615,33 @@ class EphysSet_niccolo:
         ind = ~np.isnan(data)
         data_ = data[ind]
         return data_
+    
+    def get_Vm(self,return_mean=True):
+        """_summary_
 
+        Args:
+            data (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        Vm = []
+        V = self.data['membrane_potential']
+        thr = self.data['thresholds']
+        thr_ind = self.data['thresholdindices']
+        spikes = self.data['spikeindices']
+        ind = ~np.isnan(thr)
+        spikes = spikes[ind]
+        thr = thr[ind]
+        thr_ind = thr_ind[ind]
+
+        for i, j in zip(thr_ind, thr):
+            Vm.append(V[int(i)-20*4:int(i)+20*5])
+        if return_mean:
+            return Vm, Vm, np.mean(V)
+        else:
+            return Vm
+  
     def rolling_avg(self,data):
         """_summary_
 
@@ -842,8 +868,10 @@ class EphysSet_niccolo:
         Returns:
             _type_: _description_
         """
-
+        waveform = self.get_Vm()
+        average_waveform = np.mean(waveform,axis=0)
         current_at_first_spike= self.get_current_at_first_spike()
+        tau = self.tau
         ap_count = self.get_ap_count()
         fr = self.get_firing_rate()
         inst_fr = self.get_inst_fr()
@@ -853,7 +881,8 @@ class EphysSet_niccolo:
         mean_width,median_width,max_width,min_width = self.get_AP_width()
         mean_amplitude,median_amplitude,min_amplitude,max_amplitude = self.get_AP_peak()
 
-        ephys_data =      [current_at_first_spike,
+        ephys_data =      [average_waveform,
+                           current_at_first_spike,
                            ap_count,
                            fr,
                            inst_fr,
@@ -875,6 +904,7 @@ class EphysSet_niccolo:
                            median_amplitude,
                            min_amplitude,
                            max_amplitude,
+                           tau,
                            self.exp_name,
                            self.cond,
                            self.trialnr] #
@@ -1086,7 +1116,7 @@ def return_all_ephys_dict_with_just_files(path_to_analyzed_files):
     files = os.listdir(path_to_analyzed_files)
     all_ephys_data = []
     for f in files:
-        try:
+        # try:
             data = loadmatInPy(path_to_analyzed_files+f)
             for trial, instance in enumerate(data):
                 cond = instance['input_generation_settings']['condition']
@@ -1096,8 +1126,8 @@ def return_all_ephys_dict_with_just_files(path_to_analyzed_files):
                 print(exp, trial, cond)
                 ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial)
                 all_ephys_data.append(ephys_obj.get_ephys_vals())
-        except:
-                print('problem with ',f[:-13])
+        # except:
+        #         print('problem with ',f[:-13])
 
     return all_ephys_data
 
@@ -1282,10 +1312,10 @@ def return_all_STA_h_db(path):
 
 # %%
 # data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170628_NC_33_FN_analyzed.mat")
-# data = return_all_ephys_dict_with_just_files("D:/Analyzed/")
+data = return_all_ephys_dict_with_just_files("D:/Analyzed/")
 # waves = return_all_waveforms_DB("D:/Analyzed/")
 # stas = return_all_STA_db("D:/Analyzed/")
-stas = return_all_STA_h_db("D:/Analyzed/")
+# stas = return_all_STA_h_db("D:/Analyzed/")
 
 #%%
 df = pd.DataFrame(columns=['sta','cond','exp_name','trial'])
@@ -1296,42 +1326,51 @@ df.to_pickle('D:/CurrentClamp/all_stas_hidden.pkl')
 
 # %%
 
-# feats = ['current_at_first_spike',
-# 'ap_count',
-# 'fr',
-# 'inst_fr',
-# 'time_to_first_spike',
-# 'mean_isi',
-# 'median_isi',
-# 'max_isi',
-# 'min_isi',
-# 'first_thr', 
-# 'mean_thr', 
-# 'median_thr', 
-# 'min_thr', 
-# 'max_thr',
-# 'mean_width',
-# 'median_width',
-# 'max_width',
-# 'min_width',
-# 'mean_amplitude',
-# 'median_amplitude',
-# 'min_amplitude',
-# 'max_amplitude',
-# 'exp_name',
-# 'cond',
-# 'trialnr'] #
+feats = ['waveform',
+         'current_at_first_spike',
+         'ap_count',
+         'fr',
+         'inst_fr',
+         'time_to_first_spike',
+         'mean_isi',
+         'median_isi',
+         'max_isi',
+         'min_isi',
+         'first_thr', 
+         'mean_thr', 
+         'median_thr', 
+         'min_thr', 
+         'max_thr',
+         'mean_width',
+         'median_width',
+         'max_width',
+         'min_width',
+         'mean_amplitude',
+         'median_amplitude',
+         'min_amplitude',
+         'max_amplitude',
+         'tau',
+         'exp_name',
+         'cond',
+         'trialnr']
 
-feats = ['waveforms','cond','exp_name','trial']
-# waves = np.vstack(waves)
 df = pd.DataFrame(columns=feats)
-# df['waveform'] = np.vstack(waves)[:,:-3]
-# df[['cond','exp_name','trial']] =  np.vstack(waves)[:,:-3]
-for i in range(len(waves)):
-    print(i)
-    df.loc[i,'waveforms'] = np.float32(np.array(waves)[i,:-3])
-    df.loc[i,['cond','exp_name','trial']] = np.array(waves)[i,-3:]
-df.to_pickle('D:/CurrentClamp/all_waveforms_entire.pkl')
+
+for i in range(len(data)):
+    df.loc[i,'waveform'] = np.array(data[i][0][0])
+    df.loc[i,feats[1:]] = np.array(data)[i][1:]
+df.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds.pkl')
+#%%
+# feats = ['waveforms','cond','exp_name','trial']
+# # waves = np.vstack(waves)
+# df = pd.DataFrame(columns=feats)
+# # df['waveform'] = np.vstack(waves)[:,:-3]
+# # df[['cond','exp_name','trial']] =  np.vstack(waves)[:,:-3]
+# for i in range(len(waves)):
+#     print(i)
+#     df.loc[i,'waveforms'] = np.float32(np.array(waves)[i,:-3])
+#     df.loc[i,['cond','exp_name','trial']] = np.array(waves)[i,-3:]
+# df.to_pickle('D:/CurrentClamp/all_waveforms_entire.pkl')
 
 # %%
 df.to_csv('D:/CurrentClamp/all_waveforms_entire.pkl')

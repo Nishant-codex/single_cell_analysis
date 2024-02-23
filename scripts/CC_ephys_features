@@ -880,8 +880,6 @@ def get_waveforms(spikes,v):
 
 
 spiks = collect_singlecell_spike_data(path_CC,'170816_NC_111_CC.mat',True)
-
-
 VI = returnVsandIs_analyzed_DB(path_CC,'170816_NC_111_CC.mat')
 
 # plt.show()
