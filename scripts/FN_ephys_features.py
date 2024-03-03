@@ -1074,7 +1074,6 @@ def return_all_ephys_dict_with_just_files_partitioned(path_to_analyzed_files,par
                 pass
     return all_ephys_data
 
-
 def return_all_waveforms():
     """returns a dictonary with all the ephys properties for each cell for the 
     condition provided along with the aCSF counterpart. 
@@ -1254,6 +1253,74 @@ def return_all_STA_h_db(path):
 
     return sta_all
 
+def run_and_save(path,func,savepath,save,**args):
+    
+    feats = ['waveform',
+         'current_at_first_spike',
+         'ap_count',
+         'fr',
+         'inst_fr',
+         'time_to_first_spike',
+         'mean_isi',
+         'median_isi',
+         'max_isi',
+         'min_isi',
+         'first_thr', 
+         'mean_thr', 
+         'median_thr', 
+         'min_thr', 
+         'max_thr',
+         'mean_width',
+         'median_width',
+         'max_width',
+         'min_width',
+         'mean_amplitude',
+         'median_amplitude',
+         'min_amplitude',
+         'max_amplitude',
+         'tau',
+         'exp_name',
+         'cond',
+         'trialnr']
+
+    if func.__name__ == 'return_all_ephys_dict_with_just_files_partitioned'
+        data = func("D:/Analyzed/",2)
+        data_1 = np.array(data)[:,0]
+        data_2 = np.array(data)[:,1]
+
+        df1 = pd.DataFrame(columns=feats)
+        df2 = pd.DataFrame(columns=feats)
+
+        for i in range(len(data_1)):
+            df1.loc[i,'waveform'] = np.array(data_1)[i][0]
+            df1.loc[i,feats[1:]]  = np.array(data_1)[i][1:]
+
+        for i in range(len(data_2)):
+            df2.loc[i,'waveform'] = np.array(data_2)[i][0]
+            df2.loc[i,feats[1:]]  = np.array(data_2)[i][1:]
+
+        if save:
+            df1.to_pickle(savepath+'Ephys_collection_all_exps_all_conds_first.pkl')
+            df2.to_pickle(savepath+'Ephys_collection_all_exps_all_conds_second.pkl')
+        else:
+            return df1,df2
+    
+    elif func.__name__ == 'return_all_ephys_dict_with_just_files':
+        data = func("D:/Analyzed/")
+
+        df = pd.DataFrame(columns=feats)
+
+        for i in range(len(data)):
+            df.loc[i,'waveform'] = np.array(data)[i][0]
+            df.loc[i,feats[1:]]  = np.array(data)[i][1:]
+
+        if save:
+            df.to_pickle(savepath+'Ephys_collection_all_exps_all_conds.pkl')
+        else:
+            return df1,df2       
+
+
+
 # %%
 # data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170628_NC_33_FN_analyzed.mat")
 # data = return_all_ephys_dict_with_just_files("D:/Analyzed/")
@@ -1269,7 +1336,27 @@ for i in range(len(stas)):
     df.loc[i,'sta'] = np.array(np.hstack(stas[i])[:-3],dtype=np.float32)
     df.loc[i,['cond','exp_name','trial']] = np.hstack(stas[i])[-3:] 
 # df.to_pickle('D:/CurrentClamp/all_stas_hidden.pkl')
+# %%
+    
+data_1 = np.array(data)[:,0]
+data_2 = np.array(data)[:,1]
 
+df1 = pd.DataFrame(columns=feats)
+df2 = pd.DataFrame(columns=feats)
+
+for i in range(len(data_1)):
+    df1.loc[i,'waveform'] = np.array(data_1)[i][0]
+    df1.loc[i,feats[1:]]  = np.array(data_1)[i][1:]
+
+for i in range(len(data_2)):
+    df2.loc[i,'waveform'] = np.array(data_2)[i][0]
+    df2.loc[i,feats[1:]]  = np.array(data_2)[i][1:]
+
+
+df1.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_first.pkl')
+df2.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_second.pkl')
+
+    
 # %% For saving all ephys features for clustering 
 
 feats = ['waveform',
