@@ -148,3 +148,45 @@ def loadmatInPy(filename:str)->dict:
 
 
 
+def return_name_date_exp_fn(string):
+
+  if 'NC' in string:
+    string_broken = string.split('_')
+    name = string_broken[0]
+    date = string_broken[1]
+    exp = string_broken[-2]
+    year = date[:2]
+    month = date[2:4]
+
+    if month[0] =='0':
+      month = month[1]
+    day = date[4:]
+    if day[0] =='0':
+      day = day[1]
+    date = day+month+year  
+    return name+'_'+date+'_'+exp 
+  elif 'xuan' in string:
+    broken_str = string.split('_')
+    name = broken_str[0]
+    date = broken_str[1].replace('-','')
+    exp =  broken_str[2]
+    return name+'_'+date+'_'+exp
+  elif 'asli' in string:
+    broken_str = string.split('_')
+    name = broken_str[0]
+    date = broken_str[1]
+    date = date.replace('-','')
+    exp =  broken_str[2]
+    return name+'_'+date+'_'+exp    
+  elif 'Payam' in string:
+    broken_str = string.split('_')
+    name = broken_str[0].lower()
+    date = broken_str[1].split('-')
+    exp =  broken_str[2]
+    day = date[0]
+    month = date[1]
+    year = date[2]
+    if day[0] =='0':
+      day=day[1]
+    date = day+month+year  
+    return name+'_'+date+'_'+exp
