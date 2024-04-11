@@ -219,7 +219,6 @@ def returnVsandIs(path_cc: str, filename: str)->dict:
         Is, tI, Vs, tV = [], [], [], []
         for index, step in enumerate(trial):
             if step[-1] == '2':
-                print(step[-3])
                 Vs.append(data[step][:, 1])
                 tV.append(data[step][:, 0])
             elif step[-1] == '1':
@@ -597,7 +596,6 @@ def collect_singlecell_spike_data(path_cc, filename,already_analyzed ):
                     V = steps
                     spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(
                         V, axis=1), dt=dt, searchthreshold=searchthreshold, windown=nwindow, refractory_period=refractory_period, derthreshold=derthreshold)
-                    
                     spikes_and_thrs_trials.append({'spks': spk_ind.flatten(),'thrs': thr.flatten(),'thr_ind': thr_ind.flatten()})
                 spikes_and_thrs_drug.append(spikes_and_thrs_trials)
             return spikes_and_thrs_drug
@@ -646,6 +644,10 @@ def return_name_date_exp_fn(string):
         date = day+month+year
         return name+'_'+date+'_'+exp
 
+def join_strings(data):
+     name = data.split('_')[:3]
+     return '_'.join(name)
+
 class Ephys_CC:
     def __init__(self,VI_data,spikedata):
         self.V_I_data = VI_data
@@ -678,12 +680,22 @@ class Ephys_CC:
         spike_inds  = len(self.spikedata[-1]['spks'])
         return spike_inds
 
+    def fi_curve(self):
+        time = self.offset-self.onset
+        frs =[1000*(len(self.spikedata[i]['spks'])/(time/20)) for i in range(len(self.spikedata))]
+        Is = [100*(np.mean(self.V_I_data['I'][i][self.onset:self.offset])/1e-10) for i in range(len(self.V_I_data['I']))]
+        plt.scatter(Is,frs)
+        plt.xlabel('I(pA)')
+        plt.ylabel('Firing Rate (Hz)')
 
+        plt.show()
+        return Is
+    
     def get_abs_firing_rate(self):
         time = self.offset-self.onset
 
         fr = len(self.spikedata[-1]['spks'])/(time/20)
-        return fr
+        return fr*1000
 
     def get_inst_firing_rate(self):
         isi = []
@@ -706,8 +718,6 @@ class Ephys_CC:
         return spike_inds     
 
     def get_isi_stats(self):
-        isi = []
-
         isi = np.diff(self.spikedata[-1]['spks'])/20
         mean_isi = np.mean(isi)
         max_isi = np.max(isi)
@@ -716,16 +726,7 @@ class Ephys_CC:
         return mean_isi,max_isi,min_isi,median_isi    
 
     def get_threshold_stats(self):
-        thrs = []
-        # if len(self.spikedata)>1:
-        #     for trial in self.spikedata:
-        #         thrs.append(trial[-1]['thrs'])
-        #     mean_thrs = [np.nanmean(i) for i in thrs]
-        #     max_thrs = [np.max(i) for i in thrs]
-        #     min_thrs = [np.min(i) for i in thrs]
-        #     median_thrs = [np.median(i) for i in thrs] 
-        # else:
-            
+
         thrs = self.spikedata[-1]['thrs']
         mean_thrs = np.nanmean(thrs)
         max_thrs = np.nanmax(thrs)
@@ -734,21 +735,7 @@ class Ephys_CC:
         return thrs[0], mean_thrs,max_thrs,min_thrs,median_thrs      
 
     def get_halfwidth_stats(self):
-        hwidths = []
-        # if len(self.spikedata)>1:
-        #     for indt,trial in enumerate(self.spikedata):
-        #         hwidths_sp = []
 
-        #         for ind, step in enumerate(trial):
-        #             if len(step['spks'])>0:
-        #                 for sp,thr in zip(step['spks'],step['thr_ind']):
-        #                     V = self.V_I_data['1']['V'][ind]
-        #                     half_amp = (V[sp]+V[thr])/2
-        #                     half_width = np.where(V[thr:thr+100]>=half_amp)[0]
-        #                     hwidths_sp.append(len(half_width)/20)
-        #                 break
-        #         hwidths.append(hwidths_sp)        
-        # else:
         hwidths = []
         for ind, step in enumerate(self.spikedata):
             if len(step['spks'])>1:
@@ -762,21 +749,6 @@ class Ephys_CC:
 
     def get_amplitude_stats(self):
         amp = []
-        # if len(self.spikedata)>1:
-        #     for indt,trial in enumerate(self.spikedata):
-        #         amp_ = []
-        #         for ind, step in enumerate(trial):
-        #             if len(step['spks'])>0:
-        #                 for sp in step['spks']:
-        #                     V = self.V_I_data[str(indt+1)]['V'][ind]
-        #                     arg_ahp = sp+np.argmin(V[sp:sp+100])
-        #                     # plt.plot(V[sp:sp+100])
-        #                     # plt.scatter(np.argmin(V[sp:sp+100]),V[np.argmin(V[sp:sp+100])])
-        #                     amp_i = V[sp]-V[arg_ahp]
-        #                     amp_.append(amp_i)
-        #                 break
-        #         amp.append(amp_)        
-        # else:
         amp_ = []
         for ind, step in enumerate(self.spikedata):
             if len(step['spks'])>0:
@@ -859,14 +831,15 @@ def return_all_ephys_cc_analyzed(path_cc, already_analyzed):
                         pass
                     else:
                         ephys_set_i.append(ind+1)
-                        ephys_set_i.append(f)
-
+                        print(join_strings(f))
+                        ephys_set_i.append(join_strings(f))
 
                     # all_cc_trial.append(ephys_set_i)
                     all_cc.append(ephys_set_i)
             except:
                 print('problem with inside '+f)
                 prob_cell.append(f)
+
 
     return all_cc,prob_cell
 
@@ -878,26 +851,42 @@ def get_waveforms(spikes,v):
 
 # %%
 
+path = 'D:/CurrentClamp/StepProtocol/'
 
-spiks = collect_singlecell_spike_data(path_CC,'170816_NC_111_CC.mat',True)
-VI = returnVsandIs_analyzed_DB(path_CC,'170816_NC_111_CC.mat')
+# "D:\CurrentClamp\StepProtocol\170725_NC_82_CC.mat"
+files = os.listdir('D:/CurrentClamp/StepProtocol')
+files = np.array(files)[np.array(['NC' in i for i in files],dtype=bool)]
+for f in files:
+    print(f)
+    try:
+        spiks = collect_singlecell_spike_data(path,f,already_analyzed=False)
+        VI = returnVsandIs(path,f)
+        for i in range(len(VI)):
+            foo = Ephys_CC(VI_data=VI[str(i+1)],spikedata=spiks[i])
+            foo.fi_curve()
+    except:
+         pass
 
-# plt.show()
 # %%
 
-features= ['current_first_spike','ap_count','abs_firing_rate',
-        'inst_firing_rate','time_to_first_spike','mean_isi',
-        'max_isi','min_isi','median_isi','first_thrs',
-        'mean_thrs','max_thrs','min_thrs','median_thrs',
-        'first_hwidths','mean_hwidths','median_hwidths',
-        'max_hwidths','min_hwidths','first_amp','mean_amp',
-        'median_amp','max_amp','min_amp','trialnr','filename']
-data
+
+
+data,cell_with_issues = return_all_ephys_cc_analyzed('D:/CurrentClamp/StepProtocol/',True)
+
+
 # %%
+
+features= ['current_at_first_spike','ap_count','fr',
+        'inst_fr','time_to_first_spike','mean_isi',
+        'max_isi','min_isi','median_isi','first_thr',
+        'mean_thr','max_thr','min_thr','median_thr',
+        'first_width','mean_width','median_width',
+        'max_width','min_width','first_amplitude','mean_amplitude',
+        'median_amplitude','max_amplitude','min_amplitude','trialnr','exp_name']
 df = pd.DataFrame(data,columns=features)
 df.to_csv('D:/CurrentClamp/all_ephys_CC.csv')
 # %%
-plot_single_cell("D:/CurrentClamp/StepProtocol/","170713_NC_58_CC.mat",'stacked')
+plot_single_cell("D:/CurrentClamp/StepProtocol/","170220_AL_192_CC.mat",'stacked')
 
 # %%
 waves = []
