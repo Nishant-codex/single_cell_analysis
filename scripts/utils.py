@@ -154,7 +154,7 @@ def return_name_date_exp_fn(string):
     string_broken = string.split('_')
     name = string_broken[0]
     date = string_broken[1]
-    exp = string_broken[-2]
+    exp = string_broken[-1]
     year = date[:2]
     month = date[2:4]
 
@@ -178,7 +178,7 @@ def return_name_date_exp_fn(string):
     date = date.replace('-','')
     exp =  broken_str[2]
     return name+'_'+date+'_'+exp    
-  elif 'Payam' in string:
+  elif 'Payam' in string or 'payam' in string :
     broken_str = string.split('_')
     name = broken_str[0].lower()
     date = broken_str[1].split('-')
