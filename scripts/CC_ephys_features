@@ -21,7 +21,7 @@ from utils import *
 path_cc_NC = 'D:/NC_CC_files/mat_analyzed/'
 path_cc_NC_DB = 'D:/CurrentClamp/StepProtocol/'
 all_cc = pd.read_csv("G:\My Drive\lists\Verification_list_all_CC_FN.csv")
-path_cc = 'G:/My Drive/Step-and-Hold Protocol (Xuan, Asli, NC, Payam)/'
+path_cc = 'D:/Step-and-Hold Protocol (Xuan, Asli, NC, Payam)/'
 df_acsf = all_cc[all_cc.drug==False]
 
 #%%
@@ -644,6 +644,26 @@ def return_name_date_exp_fn(string):
         date = day+month+year
         return name+'_'+date+'_'+exp
 
+def standardize_exp_string_CC(name):
+    name,exp_data = name.split('_')
+    if name =='Payam':
+        name = name.lower()
+    date = exp_data.split('-')[:3]
+    exp_num = exp_data.split('-')[3]
+    cond = exp_data.split('-')[-1]
+    s = ""
+    for i in date:
+        s = s+i 
+    return name+'_'+s+'_'+exp_num,cond
+
+def get_waveforms(spikes,v):
+    # print(np.min(np.diff(spikes)/20))
+    waves = []
+    for i in spikes:
+        waves.append(v[i-40:i+60])
+
+    return np.mean(waves,axis=0)
+
 def join_strings(data):
      name = data.split('_')[:3]
      return '_'.join(name)
@@ -754,10 +774,14 @@ class Ephys_CC:
             if len(step['spks'])>0:
                 for sp in step['spks']:
                     V = self.V_I_data['V'][ind]
-                    arg_ahp = sp+np.argmin(V[sp:sp+100])
+                    arg_ahp = sp+np.argmin(V[sp:sp+20*5])
+                    arg_min = np.argmin(V[sp-20*2:sp+20*4])
+                    arg_max = np.argmax(V[sp-20*2:sp+20*4])
+
                     # plt.plot(V[sp:sp+100])
                     # plt.scatter(np.argmin(V[sp:sp+100]),V[np.argmin(V[sp:sp+100])])
-                    amp_i = V[sp]-V[arg_ahp]
+                    amp_i = arg_max - arg_min
+
                     amp_.append(amp_i)
                 break
         amp.append(amp_)        
@@ -810,19 +834,22 @@ def return_all_ephys_cc(path_cc,df_cc,already_analyzed):
             prob_cell.append(f)
     return all_cc,prob_cell
 
-def return_all_ephys_cc_analyzed(path_cc, already_analyzed):
-    files  = os.listdir(path_cc) 
+def return_all_ephys_cc_analyzed(path_cc, already_analyzed,running_data_with_drug=False):
+    files  = os.listdir(path_cc)[:-1] 
     all_cc = []
     prob_cell = []
     for ind_, f in enumerate(files):
-        if 'NC' in f:
-            print(f)
+            exp = f[:-4]
             try:
                 VI_data = returnVsandIs_analyzed_DB(path_cc,f) 
                 spikedata = collect_singlecell_spike_data(path_cc,f,already_analyzed)
                 all_cc_trial = []
                 for ind,VI_data_ in enumerate(VI_data):
                     # print(VI_data[VI_data_])
+                    print(ind_,' ',exp,' ', ind)
+
+                    wave = get_waveforms(spikedata[ind][-1]['spks'],VI_data[str(ind+1)]['V'][-1])
+
                     ephys = Ephys_CC(VI_data[VI_data_],spikedata[ind])
 
                     ephys_set_i = ephys.get_all_ephys_vals()
@@ -831,11 +858,17 @@ def return_all_ephys_cc_analyzed(path_cc, already_analyzed):
                         pass
                     else:
                         ephys_set_i.append(ind+1)
-                        print(join_strings(f))
-                        ephys_set_i.append(join_strings(f))
+                        if running_data_with_drug:
+                            exp_name,drug_cond = standardize_exp_string_CC(exp)
+                            drug_cond = drug_cond=='DRUG'
+                            ephys_set_i.append(exp_name)
+                            ephys_set_i.append(drug_cond)
+                        else:
+                            ephys_set_i.append(exp)
 
+                        ephys_set_i.append(wave)
                     # all_cc_trial.append(ephys_set_i)
-                    all_cc.append(ephys_set_i)
+                        all_cc.append(ephys_set_i)
             except:
                 print('problem with inside '+f)
                 prob_cell.append(f)
@@ -843,11 +876,31 @@ def return_all_ephys_cc_analyzed(path_cc, already_analyzed):
 
     return all_cc,prob_cell
 
-def get_waveforms(spikes,v):
+def return_waveforms(path):
     waves = []
-    for i in spikes:
-        waves.append(v[i-60:i+60])
-    return np.mean(waves,axis=0) 
+    problem_cells = []
+    for i in os.listdir(path):
+        # if 'NC' in i:
+            exp = i[:-4]
+            # if exp == '180809_ME_5_CC':
+            try:
+                spiks = collect_singlecell_spike_data(path,i,True)
+                VI = returnVsandIs_analyzed_DB(path,i)
+                
+                for trial in range(len(spiks)):
+                    wave = []
+                    print(exp, trial)
+                    wave.append(get_waveforms(spiks[trial][-1]['spks'],VI[str(trial+1)]['V'][-1]))
+                    wave.append(trial+1)
+                    wave.append(exp)
+                    waves.append(wave) 
+            
+            except:
+                print(exp, 'is fauly')
+                problem_cells.append(exp)
+            # break
+
+    return waves,problem_cells
 
 # %%
 
@@ -871,52 +924,51 @@ for f in files:
 
 
 
-data,cell_with_issues = return_all_ephys_cc_analyzed('D:/CurrentClamp/StepProtocol/',True)
+# data,cell_with_issues = return_all_ephys_cc_analyzed('D:/CurrentClamp/StepProtocol/',True,,running_data_with_drug=False)
+
+
+data,cell_with_issues = return_all_ephys_cc_analyzed(path_cc,True,running_data_with_drug=True)
+
 
 
 # %%
+
+features_NC = ['current_at_first_spike','ap_count','fr',
+        'inst_fr','time_to_first_spike','mean_isi',
+        'max_isi','min_isi','median_isi','first_thr',
+        'mean_thr','max_thr','min_thr','median_thr',
+        'first_width','mean_width','median_width',
+        'max_width','min_width','first_amplitude',
+        'mean_amplitude','median_amplitude','max_amplitude',
+        'min_amplitude','trialnr','exp_name','waveforms']
 
 features= ['current_at_first_spike','ap_count','fr',
         'inst_fr','time_to_first_spike','mean_isi',
         'max_isi','min_isi','median_isi','first_thr',
         'mean_thr','max_thr','min_thr','median_thr',
         'first_width','mean_width','median_width',
-        'max_width','min_width','first_amplitude','mean_amplitude',
-        'median_amplitude','max_amplitude','min_amplitude','trialnr','exp_name']
+        'max_width','min_width','first_amplitude',
+        'mean_amplitude','median_amplitude','max_amplitude',
+        'min_amplitude','trialnr','exp_name','drug','waveforms']
 df = pd.DataFrame(data,columns=features)
-df.to_csv('D:/CurrentClamp/all_ephys_CC.csv')
+
+
+df.to_pickle("D:/CC_analyzed_feat_set/CC_files_all_experimenters_all_conditions.p")
 # %%
 plot_single_cell("D:/CurrentClamp/StepProtocol/","170220_AL_192_CC.mat",'stacked')
 
 # %%
-waves = []
-for i in os.listdir(path_cc_NC_DB):
-    if 'NC' in i:
-        exp = i[:-4]
-        try:
-            spiks = collect_singlecell_spike_data(path_CC,i,True)
-            VI = returnVsandIs_analyzed_DB(path_CC,i)
-            
-            for trial in range(len(spiks)):
-                wave = []
-                print(exp, trial)
-                wave.append(get_waveforms(spiks[trial][-1]['spks'],VI[str(trial+1)]['V'][-1]))
-                wave.append(trial+1)
-                wave.append(exp)
-                waves.append(wave)
-        except:
-             print(exp, 'is fauly')
-
-
+waves,prob_cells = return_waveforms(path_cc)
 
 # %%
 
 
 feats = ['waveforms','exp_name','trial']
-df = pd.DataFrame(columns=feats)
+df_waves = pd.DataFrame(columns=feats)
+waveforms = np.array(waves)[:,0]
+
 for i in range(len(waves)):
-    
-    df.loc[i,'waveforms'] = waves[i][0]
-    df.loc[i,['trial','data_wave_CC']] = waves[i][1:]
-df = df.dropna(axis=0)
-df.to_pickle('D:/CurrentClamp/CC_waveforms.pkl')
+    df_waves.loc[i,'waveforms'] = waveforms[i]
+    df_waves.loc[i,['trial','exp_name']] = np.array(waves)[i][1:]
+df_waves = df_waves.dropna(axis=0)
+# df_waves.to_pickle('D:/CurrentClamp/CC_waveforms.pkl')

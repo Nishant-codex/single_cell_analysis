@@ -523,11 +523,11 @@ class EphysSet:
         I_acsf = self.data['input_current']
         V_acsf = self.data['membrane_potential']
         spk_acsf, V_acsf, I_acsf = return_stiched_spike_train(self.data)
-        imp = overdracht_wytse(0.01, I_acsf, V_acsf, 20001, 20001, 1)
+        imp,fas = overdracht_wytse(0.01, I_acsf, V_acsf, 20001, 20001, 1)
         if return_mean:
             return np.mean(imp)
         else:
-            return imp
+            return imp,fas
     
     def get_ephys_vals(self):
         """_summary_
@@ -1030,7 +1030,7 @@ def test_single_exp(path_files, exp_name,compute_spikes=False):
 
     return all_ephys_data  
 
-def return_all_ephys_dict_with_just_files(path_to_analyzed_files,compute_spikes=False):
+def return_all_ephys_dict_with_just_files(path_to_analyzed_files,just_NC=False, compute_spikes=False):
     files = os.listdir(path_to_analyzed_files)
     all_ephys_data = []
     for f in files:
@@ -1038,11 +1038,15 @@ def return_all_ephys_dict_with_just_files(path_to_analyzed_files,compute_spikes=
             data = loadmatInPy(path_to_analyzed_files+f)
             for trial, instance in enumerate(data):
                 try:
-                    cond = instance['input_generation_settings']['condition']
+                    cond = instance['input_generation_settings']['condition'].lower()
                     # trialnr = instance['input_generation_settings']['trialnr']
 
                     exp =  f.split('.')[0]
-                    exp = return_name_date_exp_fn(exp)
+                    if just_NC:
+                        exp = return_name_date_exp_fn_NC_data(exp)
+                    else:
+                        exp = return_name_date_exp_fn(exp)
+
                     print(exp, trial, cond)
                     ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial,run_half=False,compute_spikes=compute_spikes)
                     all_ephys_data.append(ephys_obj.get_ephys_vals())
@@ -1051,6 +1055,35 @@ def return_all_ephys_dict_with_just_files(path_to_analyzed_files,compute_spikes=
             # break
 
     return all_ephys_data
+
+def return_all_impedance(path_to_analyzed_files):
+    files = os.listdir(path_to_analyzed_files)
+    all_ephys_data = []
+    for f in files:
+            # f = 'NC_170815_aCSF_D1ago_E3_analyzed.mat'
+            data = loadmatInPy(path_to_analyzed_files+f)
+            for trial, instance in enumerate(data):
+                # try:
+                    cond = instance['input_generation_settings']['condition'].lower()
+                    # trialnr = instance['input_generation_settings']['trialnr']
+
+                    exp =  f.split('.')[0]
+
+                    exp = return_name_date_exp_fn(exp)
+
+                    print(exp, trial, cond)
+                    ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp,trialnr=trial)
+                    imp,fas = ephys_obj.get_impedence(return_mean=False)
+
+                    # all_ephys_data.append(imp)
+                    # all_ephys_data.append(exp)
+                    # all_ephys_data.append(trial)
+                    # all_ephys_data.append(cond)
+                # except:
+                #         print('problem with ',f[:-13],' trial ',trial)
+            break
+
+    return fas
 
 def return_partitioned_data(data,partitions):
     input_settings = data['input_generation_settings']
@@ -1372,8 +1405,9 @@ def run_and_save(func,savepath,save=True,**args):
 # %%
 # data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170628_NC_33_FN_analyzed.mat")
 # data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
-data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
+# data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
 
+imps = return_all_impedance("D:/Analyzed/")
 # waves = return_all_waveforms_DB("D:/Analyzed/")
 # stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
 # stas = return_all_STA_h_db("D:/Analyzed/")
@@ -1385,7 +1419,6 @@ for i in range(len(stas)):
     df.loc[i,['cond','exp_name','trial']] = np.hstack(stas[i])[-3:] 
 df.to_pickle('D:/CurrentClamp/all_stas_hidden_spikes_computed.pkl')
 
-    
 # %% For saving all ephys features for clustering 
 
 feats = ['waveform',
@@ -1469,6 +1502,8 @@ for i in range(len(data)):
 
 df.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_spikes_calculated.pkl')
 
+# df.to_pickle("D:/Data For Publication/FN_files_NC.pkl")
+
 #%% For saving essential features for significance test
 feats = ['tau',
          'isi',
@@ -1532,5 +1567,21 @@ sampling_rate = 1/20
 
 
 # %%
+
+
+feats = ['impedance','exp_name','trial','cond']
+imps_vals = imps[::4]
+exps = imps[1::4]
+trials = imps[2::4]
+conds = imps[3::4]
+df = pd.DataFrame(columns=feats)
+
+for i in range(len(imps_vals)):
+    print(i)
+    df.loc[i,'impedance'] = imps_vals[i]
+    df.loc[i,['exp_name','trial','cond']] = [exps[i],trials[i],conds[i]]
+
+df.to_pickle('D:/CurrentClamp/Impedance.pkl')
+
 
 # %%

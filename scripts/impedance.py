@@ -20,7 +20,7 @@ def makespectrumt(trace, timelen, adcrate):
     NFFT2 = int(np.floor(NFFT/2))
     NFFT = int(2 * NFFT2)
     # (0:(1/timelen):(NFFT2-1)/timelen)'
-    fas = np.arange(0, NFFT2-1, (1/timelen))
+    fas = np.arange(0, (NFFT2-1)/timelen, (1/timelen))
     fwdw = signal.windows.hamming(NFFT)
     start = 0
     last = len(trace)-NFFT
@@ -66,7 +66,7 @@ def overdracht_wytse(par1, spoordac, spooradc, dacrate, adcrate, par2=None):
     ovr = pwradc/pwrdac
 
     y = ovr
-    return y
+    return y,fas
 
 
 def spectrum_wytse(spoor, rate, par1, par2=None):
@@ -142,8 +142,8 @@ def get_impedence(data):
     I_acsf = data['input_current']
     V_acsf = data['membrane_potential']
     spk_acsf, V_acsf, I_acsf = return_stiched_spike_train(data)
-    imp = overdracht_wytse(0.01, I_acsf, V_acsf, 20001, 20001, 1)
-    return imp
+    imp,fas = overdracht_wytse(0.01, I_acsf, V_acsf, 20001, 20001, 1)
+    return imp,fas
 
 
 def normalizeBytheFirstValue(data_matrix):
@@ -152,7 +152,7 @@ def normalizeBytheFirstValue(data_matrix):
     remaining = npmat[1:, :]
     remaining = remaining/firstVal
     all = np.zeros_like(npmat)
-    all[0, :] = firstVal
+    all[0, :] = firstVal/
     all[1:, :] = remaining
     return remaining
 
