@@ -185,7 +185,7 @@ def plot_UMAP_combined(data_exc,data_inh,neighbours,distance,labels,random_state
     plt.show()
 
 
-def plot_UMAP_clusters_single(data_inh, neighbours, distance, res_louvain, random_state,annotate=False,norm=True, c_list=None ,savepath=None,save=False):
+def plot_UMAP_clusters_single(data_inh, neighbours, distance, res_louvain, random_state,size =0.2,annotate=False,norm=True, c_list=None ,savepath=None,save=False):
     """plots UMAP for excitatory and inhibitory cells 
 
     Args:
@@ -226,7 +226,7 @@ def plot_UMAP_clusters_single(data_inh, neighbours, distance, res_louvain, rando
     ax12d.set_xticks([])
     ax12d.set_yticks([])
 
-    sns.scatterplot(data=df_2d_exc,x='UMAP1',y='UMAP2',hue='class',palette=c_list[:len(set(labels_exc))],ax=ax12d)
+    sns.scatterplot(data=df_2d_exc,x='UMAP1',y='UMAP2',hue='class',palette=c_list[:len(set(labels_exc))],ax=ax12d,s=size)
     if annotate:
         for i in range(len(clusterable_embedding2d)):
 

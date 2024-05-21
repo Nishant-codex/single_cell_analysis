@@ -33,6 +33,9 @@ from elephant import sta
 
 
 #%%
+
+
+
 class EphysSet:
 
     def __init__(self,data,cond,exp_name,trialnr):
@@ -651,6 +654,7 @@ class EphysSet_niccolo:
         """
         if self.compute_spikes:
             if return_mean:
+                # plt.plot(self.waveforms.T)
                 return self.waveforms,np.mean(self.waveforms,axis=0),np.mean(self.V)
             
             else:
@@ -668,7 +672,7 @@ class EphysSet_niccolo:
             thr_ind = thr_ind[ind]
 
             for i, j in zip(thr_ind, thr):
-                Vm.append(V[int(i)-20*4:int(i)+20*6])
+                Vm.append(V[int(i)-20*self.wavelen_left:int(i)+20*self.wavelen_right])
             if return_mean:
                 return Vm, np.mean(Vm,axis=0), np.mean(V)
             else:
@@ -677,25 +681,38 @@ class EphysSet_niccolo:
     def compute_thresholds(self,waveforms):
         threshold_inds = []
         thresholds = [] 
-        # plt.plot(np.vstack(waveforms).T)
-        # plt.show()
+
         for wave,spk_i in zip(waveforms,self.spikeindices):
-            thr = np.where((np.diff(wave)*20)>25)[0][0]+1
-            thr_val = wave[thr]
-            thr = (spk_i-5*20)+thr
-            threshold_inds.append(thr)
-            thresholds.append(thr_val)
-        self.thresholdindices = np.array(threshold_inds)
-        self.thresholds = np.array(thresholds)
-    
+            thr = np.where((np.diff(wave)*20)>25)[0]
+
+            if len(thr>0):
+
+                thr_val = wave[thr[0]]
+                thr_ind = (spk_i-self.wavelen_left*20)+thr[0]
+
+                threshold_inds.append(thr_ind)
+                thresholds.append(thr_val)
+            else:
+                threshold_inds.append(100.) #since thresholds cannot be calculated, a high place holder value is added
+                thresholds.append(100.)
+
+        self.bool_inds = np.array(thresholds)>0 
+        self.thresholdindices = np.array(threshold_inds)[~self.bool_inds]
+        self.thresholds = np.array(thresholds)[~self.bool_inds]
+        self.spikeindices = self.spikeindices[~self.bool_inds]
+
     def compute_spikes_and_thresholds(self):
         V = self.V
         self.spikeindices =  find_peaks(V,height=30,distance=4*20)[0]
         waveforms = []
+        self.wavelen_left = 4
+        self.wavelen_right = 6
         for i in self.spikeindices:
-            waveforms.append(V[i-5*20:i+5*20])
+            waveforms.append(V[i-self.wavelen_left*20:i+self.wavelen_right*20])
         self.compute_thresholds(waveforms)
-        self.waveforms = waveforms
+        self.waveforms = np.array(waveforms)[~self.bool_inds]
+
+
 
     def rolling_avg(self,data):
         """_summary_
@@ -875,8 +892,10 @@ class EphysSet_niccolo:
         width = []
         for i, j in zip(spks, thr_ind):
             try:
+                # print(j,)
                 spike_wf = V[int(j):int(j)+20*5]
                 # plt.plot(spike_wf)
+                # plt.show()
                 left = V[int(j):i]
                 right_ind = i-int(j)
                 right = spike_wf[right_ind:]
@@ -1024,7 +1043,7 @@ def test_single_exp(path_files, exp_name,compute_spikes=False):
     data = loadmatInPy(path_files + exp_name + '_analyzed.mat')
     for instance in data:
         cond = instance['input_generation_settings']['condition']
-        trialnr = instance['input_generation_settings']['trialnr']
+        trialnr = 0#instance['input_generation_settings']['trialnr']
         ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp_name,trialnr=trialnr,compute_spikes=compute_spikes)
         all_ephys_data.append(ephys_obj.get_ephys_vals())
 
@@ -1037,7 +1056,7 @@ def return_all_ephys_dict_with_just_files(path_to_analyzed_files,just_NC=False, 
             # f = 'NC_170815_aCSF_D1ago_E3_analyzed.mat'
             data = loadmatInPy(path_to_analyzed_files+f)
             for trial, instance in enumerate(data):
-                try:
+                # try:
                     cond = instance['input_generation_settings']['condition'].lower()
                     # trialnr = instance['input_generation_settings']['trialnr']
 
@@ -1050,8 +1069,8 @@ def return_all_ephys_dict_with_just_files(path_to_analyzed_files,just_NC=False, 
                     print(exp, trial, cond)
                     ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial,run_half=False,compute_spikes=compute_spikes)
                     all_ephys_data.append(ephys_obj.get_ephys_vals())
-                except:
-                        print('problem with ',f[:-13],' trial ',trial)
+                # except:
+                #         print('problem with ',f[:-13],' trial ',trial)
             # break
 
     return all_ephys_data
@@ -1403,16 +1422,20 @@ def run_and_save(func,savepath,save=True,**args):
 
 
 # %%
-# data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170628_NC_33_FN_analyzed.mat")
+# data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170725_NC_81_FN_analyzed.mat")
 # data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
 # data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
 
-imps = return_all_impedance("D:/Analyzed/")
+data = return_all_ephys_dict_with_just_files("D:/CurrentClamp/FN_analyzed/",just_NC=True,compute_spikes=True)
+
+
+# data = test_single_exp("D:/Analyzed/",'asli_11-7-19_E2',compute_spikes=True)
+# imps = return_all_impedance("D:/Analyzed/")
 # waves = return_all_waveforms_DB("D:/Analyzed/")
 # stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
 # stas = return_all_STA_h_db("D:/Analyzed/")
 
-#%% Fr saving all STAs
+ #%% Fr saving all STAs
 df = pd.DataFrame(columns=['sta','cond','exp_name','trial'])
 for i in range(len(stas)):
     df.loc[i,'sta'] = np.array(np.hstack(stas[i])[:-3],dtype=np.float32)
@@ -1500,9 +1523,9 @@ for i in range(len(data)):
     df.loc[i,'waveform'] = np.array(data)[i][0]
     df.loc[i,feats[1:]]  = np.array(data)[i][1:]
 
-df.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_spikes_calculated.pkl')
+# df.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_spikes_calculated.pkl')
 
-# df.to_pickle("D:/Data For Publication/FN_files_NC.pkl")
+df.to_pickle("D:/Data For Publication/FN_files_NC.pkl")
 
 #%% For saving essential features for significance test
 feats = ['tau',

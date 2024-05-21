@@ -152,7 +152,7 @@ def normalizeBytheFirstValue(data_matrix):
     remaining = npmat[1:, :]
     remaining = remaining/firstVal
     all = np.zeros_like(npmat)
-    all[0, :] = firstVal/
+    all[0, :] = firstVal
     all[1:, :] = remaining
     return remaining
 
