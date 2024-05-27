@@ -150,9 +150,9 @@ def plot_radar(data,cols,labels,figsize=(6, 6),palette=None,logscale=True,save=F
         else:
             ax.set_rscale('log')
 
-            ax.plot(angles, values_1.T*-1, linewidth=1,c=palette[i], linestyle='solid',alpha=0.1 )
+            ax.plot(angles, values_1.T, linewidth=1,c=palette[i], linestyle='solid',alpha=0.1 )
 
-            ax.plot(angles, np.mean(values_1.T*-1,axis=1), linewidth=3,c=palette[i], linestyle='solid',alpha=.8 )
+            ax.plot(angles, np.mean(values_1.T,axis=1), linewidth=3,c=palette[i], linestyle='solid',alpha=.8 )
 
     if save:
         plt.savefig(savepath,dpi=200)

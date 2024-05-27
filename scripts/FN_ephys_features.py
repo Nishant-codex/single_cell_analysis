@@ -602,6 +602,8 @@ class EphysSet_niccolo:
         self.exp_name = exp_name
         self.trialnr = trialnr
         self.compute_spikes = compute_spikes
+        self.wavelen_left = 5
+        self.wavelen_right = 5
         if run_half:
             self.V = self.data['membrane_potential']
             total_length =len(self.V)
@@ -705,8 +707,7 @@ class EphysSet_niccolo:
         V = self.V
         self.spikeindices =  find_peaks(V,height=30,distance=4*20)[0]
         waveforms = []
-        self.wavelen_left = 4
-        self.wavelen_right = 6
+
         for i in self.spikeindices:
             waveforms.append(V[i-self.wavelen_left*20:i+self.wavelen_right*20])
         self.compute_thresholds(waveforms)
@@ -1056,7 +1057,7 @@ def return_all_ephys_dict_with_just_files(path_to_analyzed_files,just_NC=False, 
             # f = 'NC_170815_aCSF_D1ago_E3_analyzed.mat'
             data = loadmatInPy(path_to_analyzed_files+f)
             for trial, instance in enumerate(data):
-                # try:
+                try:
                     cond = instance['input_generation_settings']['condition'].lower()
                     # trialnr = instance['input_generation_settings']['trialnr']
 
@@ -1069,8 +1070,8 @@ def return_all_ephys_dict_with_just_files(path_to_analyzed_files,just_NC=False, 
                     print(exp, trial, cond)
                     ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial,run_half=False,compute_spikes=compute_spikes)
                     all_ephys_data.append(ephys_obj.get_ephys_vals())
-                # except:
-                #         print('problem with ',f[:-13],' trial ',trial)
+                except:
+                        print('problem with ',f[:-13],' trial ',trial)
             # break
 
     return all_ephys_data
@@ -1423,13 +1424,13 @@ def run_and_save(func,savepath,save=True,**args):
 
 # %%
 # data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170725_NC_81_FN_analyzed.mat")
-# data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
+data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
 # data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
 
-data = return_all_ephys_dict_with_just_files("D:/CurrentClamp/FN_analyzed/",just_NC=True,compute_spikes=True)
+# data = return_all_ephys_dict_with_just_files("D:/CurrentClamp/FN_analyzed/",just_NC=True,compute_spikes=True)
 
 
-# data = test_single_exp("D:/Analyzed/",'asli_11-7-19_E2',compute_spikes=True)
+# data = test_single_exp("D:/Analyzed/",'payam_03-10-19_E5',compute_spikes=True)
 # imps = return_all_impedance("D:/Analyzed/")
 # waves = return_all_waveforms_DB("D:/Analyzed/")
 # stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
@@ -1523,9 +1524,9 @@ for i in range(len(data)):
     df.loc[i,'waveform'] = np.array(data)[i][0]
     df.loc[i,feats[1:]]  = np.array(data)[i][1:]
 
-# df.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_spikes_calculated.pkl')
+df.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_spikes_calculated_5ms.pkl')
 
-df.to_pickle("D:/Data For Publication/FN_files_NC.pkl")
+# df.to_pickle("D:/Data For Publication/FN_files_NC.pkl")
 
 #%% For saving essential features for significance test
 feats = ['tau',
