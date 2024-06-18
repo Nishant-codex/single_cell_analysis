@@ -1422,15 +1422,15 @@ def run_and_save(func,savepath,save=True,**args):
 
 
 
-# %%
-# data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170725_NC_81_FN_analyzed.mat")
-data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
+# %%xuan_29319_E1
+data = loadmatInPy("D:/Analyzed/xuan_29-3-19_E1_analyzed.mat")
+# data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
 # data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
 
 # data = return_all_ephys_dict_with_just_files("D:/CurrentClamp/FN_analyzed/",just_NC=True,compute_spikes=True)
 
-
-# data = test_single_exp("D:/Analyzed/",'payam_03-10-19_E5',compute_spikes=True)
+# "D:\Analyzed\NC_170821_aCSF_D1ago_E4_analyzed.mat"
+# data = test_single_exp("D:/Analyzed/",'NC_170821_aCSF_D1ago_E4',compute_spikes=True)
 # imps = return_all_impedance("D:/Analyzed/")
 # waves = return_all_waveforms_DB("D:/Analyzed/")
 # stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
@@ -1524,7 +1524,7 @@ for i in range(len(data)):
     df.loc[i,'waveform'] = np.array(data)[i][0]
     df.loc[i,feats[1:]]  = np.array(data)[i][1:]
 
-df.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_spikes_calculated_5ms.pkl')
+# df.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_spikes_calculated_5ms.pkl')
 
 # df.to_pickle("D:/Data For Publication/FN_files_NC.pkl")
 
