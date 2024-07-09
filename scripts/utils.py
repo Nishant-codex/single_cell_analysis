@@ -147,14 +147,13 @@ def loadmatInPy(filename:str)->dict:
 
 
 
-
 def return_name_date_exp_fn(string):
 
   if 'NC' in string:
     string_broken = string.split('_')
     name = string_broken[0]
     date = string_broken[1]
-    exp = string_broken[-2]
+    exp = string_broken[-1]
     year = date[:2]
     month = date[2:4]
 
@@ -190,9 +189,6 @@ def return_name_date_exp_fn(string):
       day=day[1]
     date = day+month+year  
     return name+'_'+date+'_'+exp
-
-
-
 
 def return_name_date_exp_fn_NC_data(string):
 

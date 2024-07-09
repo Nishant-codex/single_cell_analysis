@@ -1015,7 +1015,7 @@ class EphysSet_niccolo:
             sampling_rate = 1/20
             spks = self.spikeindices*(sampling_rate)
             V = self.V
-            I = self.I
+            I = (self.I-self.data['input_generation_settings']['baseline'])/self.data['input_generation_settings']['amplitude_scaling']
 
             spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
             signal = neo.AnalogSignal(np.array([I]).T, units='pA',sampling_rate=20/ms) 
@@ -1045,7 +1045,10 @@ def test_single_exp(path_files, exp_name,compute_spikes=False):
     for instance in data:
         cond = instance['input_generation_settings']['condition']
         trialnr = 0#instance['input_generation_settings']['trialnr']
-        ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp_name,trialnr=trialnr,compute_spikes=compute_spikes)
+        exp = exp_name
+        exp = return_name_date_exp_fn(exp)
+
+        ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trialnr,compute_spikes=compute_spikes)
         all_ephys_data.append(ephys_obj.get_ephys_vals())
 
     return all_ephys_data  
@@ -1423,7 +1426,7 @@ def run_and_save(func,savepath,save=True,**args):
 
 
 # %%xuan_29319_E1
-data = loadmatInPy("D:/Analyzed/xuan_29-3-19_E1_analyzed.mat")
+# data = loadmatInPy("D:/Analyzed/xuan_29-3-19_E1_analyzed.mat")
 # data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
 # data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
 
@@ -1433,7 +1436,7 @@ data = loadmatInPy("D:/Analyzed/xuan_29-3-19_E1_analyzed.mat")
 # data = test_single_exp("D:/Analyzed/",'NC_170821_aCSF_D1ago_E4',compute_spikes=True)
 # imps = return_all_impedance("D:/Analyzed/")
 # waves = return_all_waveforms_DB("D:/Analyzed/")
-# stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
+stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
 # stas = return_all_STA_h_db("D:/Analyzed/")
 
  #%% Fr saving all STAs
@@ -1441,7 +1444,7 @@ df = pd.DataFrame(columns=['sta','cond','exp_name','trial'])
 for i in range(len(stas)):
     df.loc[i,'sta'] = np.array(np.hstack(stas[i])[:-3],dtype=np.float32)
     df.loc[i,['cond','exp_name','trial']] = np.hstack(stas[i])[-3:] 
-df.to_pickle('D:/CurrentClamp/all_stas_hidden_spikes_computed.pkl')
+df.to_pickle('D:/CurrentClamp/all_stas_shifted.pkl')
 
 # %% For saving all ephys features for clustering 
 
