@@ -120,22 +120,22 @@ def find_optimum_res(data,save=False,savepath=None):
     full_data = data
     # BLUE COLOR
     BlueCol = '\033[94m'
-    subsets=[0.8]
+    subsets=[0.9]
     import random 
     for res in resolution_list:
-        print("\n" + BlueCol + str(res))
+        # print("\n" + BlueCol + str(res))
         for frac in subsets:
             rand_list = []
             n_clusts = []
             for i in list(range(1,25)):
                 reducer_rand_test = umap.UMAP(n_neighbors = 20, 
-                                        min_dist=0.1, 
-                                        # random_state=random.randint(1,100000),
-                                        n_jobs=-1
-                                        )
+                                              min_dist=0.1, 
+                                              random_state=random.randint(1,100000),
+                                              n_jobs=1
+                                              )
                 
                 idx1 = np.zeros(len(full_data),dtype=bool)
-                rows_to_keep = np.random.randint(0,int(len(full_data)),int(len(full_data)*frac))
+                rows_to_keep = list(set(random.sample(set(np.arange(0,len(full_data))),int(frac*len(full_data)))))
                 idx1[rows_to_keep] = True
                 part_data = full_data[idx1,:]
 
@@ -151,16 +151,17 @@ def find_optimum_res(data,save=False,savepath=None):
                 modularity= get_modularity(adjacency,labels_exc)
                 rand_list.append(modularity)
                 n_clusts.append(len(set(clustering_solution)))
+                
             modularity_dict.update({str(res): rand_list})
             n_clusts_dict.update({str(res): n_clusts})
-
+        print("\n" + BlueCol + str(res),'n_clusters', len(set(clustering_solution)))
 
     resolution_list = np.linspace(0,5,11)
 
     avg_n_clusts = []
     for k in list(n_clusts_dict.keys()):
         avg_n_clusts.append(np.mean(n_clusts_dict[k]))
-        
+    
     std_n_clusts = []
     for k in list(n_clusts_dict.keys()):
         std_n_clusts.append(np.std(n_clusts_dict[k]))
@@ -197,7 +198,7 @@ def find_optimum_res(data,save=False,savepath=None):
     # ax2.spines['left'].set_color('b')
     ax2.tick_params(axis='y',colors='#f87575')
     ax2.set_ylim([0,18])
-    ax2.set_yticks([0,4,8,12,16]);
+    ax2.set_yticks([0,4,8,12,16])
     ax2.spines['top'].set_visible(False)
     ax2.spines['right'].set_color('#f87575')
     ax2.spines['left'].set_color('#5c95ff')

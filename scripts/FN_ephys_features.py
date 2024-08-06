@@ -34,8 +34,6 @@ from elephant import sta
 
 #%%
 
-
-
 class EphysSet:
 
     def __init__(self,data,cond,exp_name,trialnr):
@@ -713,8 +711,6 @@ class EphysSet_niccolo:
         self.compute_thresholds(waveforms)
         self.waveforms = np.array(waveforms)[~self.bool_inds]
 
-
-
     def rolling_avg(self,data):
         """_summary_
 
@@ -1015,8 +1011,8 @@ class EphysSet_niccolo:
             sampling_rate = 1/20
             spks = self.spikeindices*(sampling_rate)
             V = self.V
-            I = (self.I-self.data['input_generation_settings']['baseline'])/self.data['input_generation_settings']['amplitude_scaling']
-
+            # I = (self.I-self.data['input_generation_settings']['baseline'])/self.data['input_generation_settings']['amplitude_scaling']
+            I = (self.I - np.mean(self.I))/np.std(self.I)
             spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
             signal = neo.AnalogSignal(np.array([I]).T, units='pA',sampling_rate=20/ms) 
             sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0 * ms))
@@ -1034,7 +1030,6 @@ class EphysSet_niccolo:
                                     sampling_rate=20/ms) 
         sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0 * ms))
         return sta_.magnitude   
-
 
 def test_single_exp(path_files, exp_name,compute_spikes=False):
 
@@ -1297,7 +1292,7 @@ def return_all_STA_db(path,compute_spikes=False):
     sta_all  = [] 
     files = os.listdir(path)
     for f in files:
-        try:
+        # try:
             data = loadmatInPy(path +f)
             exp = f[:-13]
             exp = return_name_date_exp_fn(exp)
@@ -1312,8 +1307,35 @@ def return_all_STA_db(path,compute_spikes=False):
                 sta.append(ephys_obj.exp_name)
                 sta.append(trial)
                 sta_all.append(sta)
-        except:
-            print('problem with ',f[:-13])
+        # except:
+        #     print('problem with ',f[:-13])
+    return sta_all
+
+def return_all_STA_norm(path):
+    sta_all  = [] 
+    files = os.listdir(path)
+    for f in files:
+        # try:
+            data = loadmatInPy(path +f)
+            exp = f[:-13]
+            exp = return_name_date_exp_fn(exp)
+            
+            for trial,instance in enumerate(data):
+                sta = []
+                cond = instance['input_generation_settings']['condition']
+                print(exp, trial, cond)
+                ephys_obj = EphysSet_niccolo(data=instance,cond=cond,exp_name=exp,trialnr=trial)
+                # sta = list(ephys_obj.get_sta())
+                sta_ = instance['sta']['ic']['raw']
+                sta.append(sta_)
+                sta.append(instance['input_generation_settings']['baseline'])
+                sta.append(instance['sta']['ic']['normalized_peakdistance'])
+                sta.append(ephys_obj.cond)
+                sta.append(ephys_obj.exp_name)
+                sta.append(trial)
+                sta_all.append(sta)
+        # except:
+        #     print('problem with ',f[:-13])
     return sta_all
 
 def return_all_STA_h_db(path):
@@ -1423,8 +1445,6 @@ def run_and_save(func,savepath,save=True,**args):
         else:
             return df1,df2       
 
-
-
 # %%xuan_29319_E1
 # data = loadmatInPy("D:/Analyzed/xuan_29-3-19_E1_analyzed.mat")
 # data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
@@ -1439,12 +1459,16 @@ def run_and_save(func,savepath,save=True,**args):
 stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
 # stas = return_all_STA_h_db("D:/Analyzed/")
 
- #%% Fr saving all STAs
-df = pd.DataFrame(columns=['sta','cond','exp_name','trial'])
+
+# stas = return_all_STA_norm("D:/Analyzed/")
+
+
+#%% Fr saving all STAs
+df = pd.DataFrame(columns=['sta','baseline','peak_distance','cond','exp_name','trial'])
 for i in range(len(stas)):
     df.loc[i,'sta'] = np.array(np.hstack(stas[i])[:-3],dtype=np.float32)
-    df.loc[i,['cond','exp_name','trial']] = np.hstack(stas[i])[-3:] 
-df.to_pickle('D:/CurrentClamp/all_stas_shifted.pkl')
+    df.loc[i,['baseline','peak_distance','cond','exp_name','trial']] = np.hstack(stas[i])[-5:] 
+df.to_pickle('D:/CurrentClamp/all_stas_normed_input.pkl')
 
 # %% For saving all ephys features for clustering 
 

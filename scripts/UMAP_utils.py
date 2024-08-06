@@ -247,7 +247,7 @@ def plot_UMAP_clusters_single(data_inh, neighbours, distance, res_louvain, rando
 
 
 
-def plot_UMAP_values(data_inh, values,neighbours=20, distance=0.1, random_state=42,annotate=False, c_list=None ,save=False):
+def plot_UMAP_values(data_inh, values,neighbours=20, distance=0.1, random_state=42,annotate=False, c_list=None ,savepath=None,save=False):
     """plots UMAP for excitatory and inhibitory cells
 
     Args:
@@ -293,7 +293,7 @@ def plot_UMAP_values(data_inh, values,neighbours=20, distance=0.1, random_state=
         # ax12d.set_title('UMAP clusters for excitatory neurons 2D')
         ax12d.legend()
     if save:
-        plt.savefig('C:/Users/Nishant Joshi/Documents/DNM/exc_umap_cluster.png',dpi=200)
+        plt.savefig(savepath,dpi=200)
 
     plt.show()
 
