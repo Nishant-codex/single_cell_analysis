@@ -1012,7 +1012,7 @@ class EphysSet_niccolo:
             spks = self.spikeindices*(sampling_rate)
             V = self.V
             # I = (self.I-self.data['input_generation_settings']['baseline'])/self.data['input_generation_settings']['amplitude_scaling']
-            I = (self.I - np.mean(self.I))/np.std(self.I)
+            I = self.I - np.mean(self.I) #(self.I - np.mean(self.I))/np.std(self.I)
             spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
             signal = neo.AnalogSignal(np.array([I]).T, units='pA',sampling_rate=20/ms) 
             sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0 * ms))
@@ -1446,17 +1446,19 @@ def run_and_save(func,savepath,save=True,**args):
             return df1,df2       
 
 # %%xuan_29319_E1
-# data = loadmatInPy("D:/Analyzed/xuan_29-3-19_E1_analyzed.mat")
+data = loadmatInPy("D:/Analyzed/xuan_29-3-19_E1_analyzed.mat")
 # data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
 # data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
 
 # data = return_all_ephys_dict_with_just_files("D:/CurrentClamp/FN_analyzed/",just_NC=True,compute_spikes=True)
 
 # "D:\Analyzed\NC_170821_aCSF_D1ago_E4_analyzed.mat"
+
+
 # data = test_single_exp("D:/Analyzed/",'NC_170821_aCSF_D1ago_E4',compute_spikes=True)
 # imps = return_all_impedance("D:/Analyzed/")
 # waves = return_all_waveforms_DB("D:/Analyzed/")
-stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
+# stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
 # stas = return_all_STA_h_db("D:/Analyzed/")
 
 
