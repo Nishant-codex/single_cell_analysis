@@ -20,7 +20,7 @@ from scipy.spatial.distance import cdist
 from matplotlib.ticker import NullFormatter
 from sklearn.decomposition import PCA,IncrementalPCA,SparsePCA
 from sklearn.preprocessing import StandardScaler, normalize
-from PCA import shuffle_prams
+from residual_code.Infomation_transfer.PCA import shuffle_prams
 from matplotlib.ticker import NullFormatter
 from sklearn import manifold, datasets
 # from analyze_single_cell import collect_drug_and_acsf
@@ -28,7 +28,7 @@ from sklearn import manifold, datasets
 from sknetwork.clustering import Louvain,get_modularity
 
 import pickle
-from PCA import * 
+from residual_code.Infomation_transfer.PCA import * 
 import umap.umap_ as umap
 
 def plot_UMAP(data_inh,data_exc,c_exc,c_inh,neighbours,distance,condition_inh,condition_exc,figsize=None,random_state=0,save=False):

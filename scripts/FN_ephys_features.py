@@ -19,8 +19,8 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from math import isnan
 from utils import *
-from analyze_single_cell import collect_drug_and_acsf
-from impedance import *
+from residual_code.Infomation_transfer.analyze_single_cell import collect_drug_and_acsf
+from residual_code.Infomation_transfer.impedance import *
 from sklearn.linear_model import LinearRegression
 import neo
 from quantities import *
@@ -1446,7 +1446,8 @@ def run_and_save(func,savepath,save=True,**args):
             return df1,df2       
 
 # %%xuan_29319_E1
-data = loadmatInPy("D:/Analyzed/xuan_29-3-19_E1_analyzed.mat")
+data = loadmatInPy("G:/My Drive/Analyzed/xuan_29-3-19_E1_analyzed.mat")
+
 # data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
 # data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
 
