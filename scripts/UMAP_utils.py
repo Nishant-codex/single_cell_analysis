@@ -20,7 +20,7 @@ from scipy.spatial.distance import cdist
 from matplotlib.ticker import NullFormatter
 from sklearn.decomposition import PCA,IncrementalPCA,SparsePCA
 from sklearn.preprocessing import StandardScaler, normalize
-from residual_code.Infomation_transfer.PCA import shuffle_prams
+# from residual_code.Infomation_transfer.PCA import shuffle_prams
 from matplotlib.ticker import NullFormatter
 from sklearn import manifold, datasets
 # from analyze_single_cell import collect_drug_and_acsf
@@ -28,7 +28,7 @@ from sklearn import manifold, datasets
 from sknetwork.clustering import Louvain,get_modularity
 
 import pickle
-from residual_code.Infomation_transfer.PCA import * 
+# from residual_code.Infomation_transfer.PCA import * 
 import umap.umap_ as umap
 
 def plot_UMAP(data_inh,data_exc,c_exc,c_inh,neighbours,distance,condition_inh,condition_exc,figsize=None,random_state=0,save=False):
@@ -184,7 +184,6 @@ def plot_UMAP_combined(data_exc,data_inh,neighbours,distance,labels,random_state
   
     plt.show()
 
-
 def plot_UMAP_clusters_single(data_inh, neighbours, distance, res_louvain, random_state,size =0.2,annotate=False,norm=True, c_list=None ,savepath=None,save=False):
     """plots UMAP for excitatory and inhibitory cells 
 
@@ -244,10 +243,7 @@ def plot_UMAP_clusters_single(data_inh, neighbours, distance, res_louvain, rando
 
     return labels_exc,mapper,reducer
 
-
-
-
-def plot_UMAP_values(data_inh, values,neighbours=20, distance=0.1, random_state=42,annotate=False, c_list=None ,savepath=None,save=False):
+def plot_UMAP_values(data_inh, values,neighbours=20, distance=0.1, random_state=42,annotate=False, c_list=None ,savepath=None,save=False,figsize=[4,4]):
     """plots UMAP for excitatory and inhibitory cells
 
     Args:
@@ -267,7 +263,7 @@ def plot_UMAP_values(data_inh, values,neighbours=20, distance=0.1, random_state=
     reducer = umap.UMAP(n_neighbors=neighbours,min_dist=dist,random_state=random_state)
     mapper = reducer.fit(data_umap)
 
-    fig = plt.figure(figsize=[4,4])
+    fig = plt.figure(figsize=figsize)
     ax12d = fig.add_subplot(1,1,1)
 
     clusterable_embedding2d = umap.UMAP(n_neighbors=neighbours,min_dist=dist,
@@ -296,6 +292,16 @@ def plot_UMAP_values(data_inh, values,neighbours=20, distance=0.1, random_state=
         plt.savefig(savepath,dpi=200)
 
     plt.show()
+
+def binarize_EI_labels(labels, e_vals):
+    temp_labels = labels
+    for idx,vals in enumerate(labels):
+        if vals in e_vals:
+            temp_labels[idx] =1
+        else:
+            temp_labels[idx] =0 
+
+    return temp_labels
 
 
 

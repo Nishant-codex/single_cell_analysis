@@ -10,6 +10,15 @@ from sklearn.preprocessing import normalize
 import seaborn as sns 
 import pandas as pd 
 
+
+import paxplot
+from sklearn.preprocessing import MinMaxScaler
+
+from sklearn.preprocessing import StandardScaler
+
+from sklearn.preprocessing import normalize
+
+
 def pax_plot_data(data,cols,labels,pallete,savepath, save= False):
     # # Import data
 
@@ -53,7 +62,6 @@ def pax_plot_data(data,cols,labels,pallete,savepath, save= False):
         plt.savefig(savepath,dpi=300)
 
     plt.show()
-
 
 def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,figsize =[12,5],shuffle = False,save=False,savepath=None,cmap='BrBG_r'):
     np.random.seed(42)
@@ -108,7 +116,7 @@ def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,fig
         sns.heatmap(mat,cmap=cmap,annot=True,vmin=vmin,vmax=vmax) 
 
 
-def plot_radar(data,cols,labels,figsize=(6, 6),palette=None,logscale=True,save=False,savepath=None,):
+def plot_radar(data,cols,labels,figsize=(6, 6),lims=None,palette=None,logscale=True,save=False,savepath=None,):
     fig, ax = plt.subplots(figsize=figsize, subplot_kw=dict(polar=True))
 
     cols_ = cols
@@ -121,7 +129,6 @@ def plot_radar(data,cols,labels,figsize=(6, 6),palette=None,logscale=True,save=F
 
         # Number of variables we're plotting.
         num_vars = len(cols_)
-
         # Compute angle of each axis.
         angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
 
@@ -139,20 +146,20 @@ def plot_radar(data,cols,labels,figsize=(6, 6),palette=None,logscale=True,save=F
         for label, angle in zip(ax.get_xticklabels(), angles):
             x, y = label.get_position()
             label.set_position((x, y-0.2 ))  # Adjust the value to move labels further out
-
         # Draw ylabels.
         if logscale:
             ax.set_rscale('log')
             ax.plot(angles, values_1.T, linewidth=1,c=palette[i], linestyle='solid',alpha=0.1 )
-
             ax.plot(angles, np.mean(values_1.T,axis=1), linewidth=3,c=palette[i], linestyle='solid',alpha=.8 )
+            ax.set_ylim(lims)
 
         else:
-            ax.set_rscale('log')
+            # ax.set_rscale('log')
 
             ax.plot(angles, values_1.T, linewidth=1,c=palette[i], linestyle='solid',alpha=0.1 )
 
             ax.plot(angles, np.mean(values_1.T,axis=1), linewidth=3,c=palette[i], linestyle='solid',alpha=.8 )
+            ax.set_ylim(lims)
 
     if save:
         plt.savefig(savepath,dpi=200)

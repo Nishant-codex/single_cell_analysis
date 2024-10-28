@@ -20,7 +20,7 @@ from sklearn.preprocessing import StandardScaler
 from math import isnan
 from utils import *
 from residual_code.Infomation_transfer.analyze_single_cell import collect_drug_and_acsf
-from residual_code.Infomation_transfer.impedance import *
+from single_cell_analysis.scripts.impedance import *
 from sklearn.linear_model import LinearRegression
 import neo
 from quantities import *

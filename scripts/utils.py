@@ -67,8 +67,6 @@ def join_conditions(path:str = None, list_cond:list = None,exc_inh_sep:bool = Fa
 	else:
 		return new_df
 
-
-
 def loadmatInPy(filename:str)->dict:
 	"""	
 	this function should be called instead of direct spio.loadmat
@@ -144,8 +142,6 @@ def loadmatInPy(filename:str)->dict:
 		data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)['Data']
 		data = _todict(data) 
 	return _check_keys(data)
-
-
 
 def return_name_date_exp_fn(string):
 
