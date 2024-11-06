@@ -17,6 +17,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 
 from sklearn.preprocessing import normalize
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 def pax_plot_data(data,cols,labels,pallete,savepath, save= False):
@@ -115,6 +116,15 @@ def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,fig
 
         sns.heatmap(mat,cmap=cmap,annot=True,vmin=vmin,vmax=vmax) 
 
+def plot_cosine_mat(data1,data2,label1,label2):
+    cosine_mat = np.zeros((len(set(label1)),len(set(label2))))
+    sim_data = cosine_similarity(data1,data2)
+    for i in set(label1):
+        for j in set(label2):
+            idx_FN = label1==i
+            idx_SH = label2==j
+            cosine_mat[i,j] = np.mean(sim_data[:,idx_FN][idx_SH])
+    return cosine_mat
 
 def plot_radar(data,cols,labels,figsize=(6, 6),lims=None,palette=None,logscale=True,save=False,savepath=None,):
     fig, ax = plt.subplots(figsize=figsize, subplot_kw=dict(polar=True))

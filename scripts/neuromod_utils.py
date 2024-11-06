@@ -3,6 +3,8 @@ import seaborn as sns
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import normalize
 import numpy as np
+
+
 def binarize_EI_labels(labels, e_vals):
     temp_labels = labels
     for idx,vals in enumerate(labels):
