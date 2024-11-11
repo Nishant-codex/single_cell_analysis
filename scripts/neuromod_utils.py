@@ -39,11 +39,18 @@ def neumericalize_neurmods(df):
                     'agoanta'   :10})
     return numeric_list
 
-def return_acsf_and_drug(df,cond,joint=False):
+def return_acsf_and_drug(df,cond,joint=False,remove_duplicates=True):
     exps = list(set(df[df.cond.isin(cond)]['exp_name']))
     df_new = df[df.exp_name.isin(exps)]
     df_acsf = df_new[df_new.cond == 'acsf']
     df_drug = df_new[df_new.cond == cond[0]]
+    if remove_duplicates:
+        common_exps = set(df_acsf.exp_name) & set(df_drug.exp_name)
+        df_acsf = df_acsf.drop_duplicates('exp_name')
+        df_acsf = df_acsf[df_acsf.exp_name.isin(common_exps)]
+        df_drug = df_drug.drop_duplicates('exp_name')
+        df_drug = df_drug[df_drug.exp_name.isin(common_exps)]
+
     if joint:
         return pd.concat([df_acsf,df_drug])
     else:

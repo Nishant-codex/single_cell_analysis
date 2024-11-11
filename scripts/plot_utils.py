@@ -18,6 +18,8 @@ from sklearn.preprocessing import StandardScaler
 
 from sklearn.preprocessing import normalize
 from sklearn.metrics.pairwise import cosine_similarity
+from itertools import combinations
+from statannotations.Annotator import Annotator
 
 
 def pax_plot_data(data,cols,labels,pallete,savepath, save= False):
@@ -86,13 +88,13 @@ def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,fig
         mat_orig = np.zeros((len(set(df1[label1_name])),len(set(df2[label2_name]))))
         for i in np.unique(df.label1):
             data_ = np.unique(df[df.label1==i]['label2'],return_counts=True)
-            mat_orig[i,data_[0]] =(data_[1]/np.sum(data_[1]))*100 
+            mat_orig[i,data_[0]] =(data_[1]/np.sum(data_[1]))
 
         mat_sh = np.zeros((len(set(df['label1_sh'])),len(set(df['label2_sh']))))
 
         for i in np.unique(df.label1_sh):
             data_ = np.unique(df[df.label1_sh==i]['label2_sh'],return_counts=True)
-            mat_sh[i,data_[0]] =(data_[1]/np.sum(data_[1]))*100 
+            mat_sh[i,data_[0]] =(data_[1]/np.sum(data_[1]))
 
 
         sns.heatmap(mat_orig-mat_sh,cmap=cmap,annot=True,ax=ax1,vmin=vmin,vmax=vmax) 
@@ -112,7 +114,7 @@ def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,fig
 
         for i in np.unique(df.label1):
             data_ = np.unique(df[df.label1==i]['label2'],return_counts=True)
-            mat[i,data_[0]] =(data_[1]/np.sum(data_[1]))*100 
+            mat[i,data_[0]] =(data_[1]/np.sum(data_[1]))
 
         sns.heatmap(mat,cmap=cmap,annot=True,vmin=vmin,vmax=vmax) 
 
@@ -126,8 +128,49 @@ def plot_cosine_mat(data1,data2,label1,label2):
             cosine_mat[i,j] = np.mean(sim_data[:,idx_FN][idx_SH])
     return cosine_mat
 
-def plot_radar(data,cols,labels,figsize=(6, 6),lims=None,palette=None,logscale=True,save=False,savepath=None,):
+def plot_significance_new(data,var,hue,ax,palette='mako',drug=False,test ='Mann-Whitney'):
+
+
+    ax.tick_params(axis='x', labelsize=20)
+    ax.tick_params(axis='y', labelsize=20)
+
+    boxes = sns.violinplot(data=data,
+                            x=hue,
+                            y=var,
+                            width=.6, 
+                            palette=palette,
+                            ax=ax)
+
+    # sns.stripplot(x=hue, y=var , data=data,           
+    #             size=3, color=".4", linewidth=0,ax=ax) 
+    ax.set_xlabel('class',fontdict={'fontsize':20})
+    ax.set_ylabel(var,fontdict={'fontsize':20})
+
+    for box,col in zip(boxes.patches,['blue','crimson','teal']):
+        mybox1 = box
+
+        # Change the appearance of that box
+        if drug:
+            mybox1.set_facecolor('white')
+            mybox1.set_edgecolor(col)
+        else:
+            mybox1.set_facecolor(col)
+            mybox1.set_edgecolor('black')
+
+        mybox1.set_linewidth(3)
+
+    pairs = np.unique(data[hue])
+    pairs = [i for i in combinations(pairs,2)]
+
+    annotator = Annotator(ax,pairs, data=data, x=hue,palette=palette, y=var)
+    annotator.configure(test=test, text_format='star', loc='inside')
+    annotator.apply_and_annotate()  
+    plt.show()
+
+def plot_radar(data,cols,labels,figsize=(6, 6),lims=None,palette=None,logscale=True,save=False,savepath=None,label_font_size=12,linewidth=0.5):
     fig, ax = plt.subplots(figsize=figsize, subplot_kw=dict(polar=True))
+    ax.yaxis.grid(color='lightgray', linestyle='--')
+    zero_line_color = 'red'
 
     cols_ = cols
     data_norm = normalize(data[cols_].to_numpy(),axis=0)
@@ -152,22 +195,22 @@ def plot_radar(data,cols,labels,figsize=(6, 6),lims=None,palette=None,logscale=T
         # Draw one axe per variable and add labels.
         ax.set_theta_offset(np.pi / 2)
         ax.set_theta_direction(-1)
-        plt.xticks(angles[:-1], categories,fontsize=12,)
+        plt.xticks(angles[:-1], categories,fontsize=label_font_size,)
         for label, angle in zip(ax.get_xticklabels(), angles):
             x, y = label.get_position()
             label.set_position((x, y-0.2 ))  # Adjust the value to move labels further out
         # Draw ylabels.
         if logscale:
             ax.set_rscale('log')
+            ax.plot(np.linspace(0, 2*np.pi, 100), np.zeros(100), color=zero_line_color, linewidth=linewidth, zorder=3)
             ax.plot(angles, values_1.T, linewidth=1,c=palette[i], linestyle='solid',alpha=0.1 )
             ax.plot(angles, np.mean(values_1.T,axis=1), linewidth=3,c=palette[i], linestyle='solid',alpha=.8 )
             ax.set_ylim(lims)
 
         else:
             # ax.set_rscale('log')
-
+            ax.plot(np.linspace(0, 2*np.pi, 100), np.zeros(100), color=zero_line_color, linewidth=linewidth, zorder=3)
             ax.plot(angles, values_1.T, linewidth=1,c=palette[i], linestyle='solid',alpha=0.1 )
-
             ax.plot(angles, np.mean(values_1.T,axis=1), linewidth=3,c=palette[i], linestyle='solid',alpha=.8 )
             ax.set_ylim(lims)
 
