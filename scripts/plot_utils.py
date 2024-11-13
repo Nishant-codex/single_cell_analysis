@@ -167,6 +167,25 @@ def plot_significance_new(data,var,hue,ax,palette='mako',drug=False,test ='Mann-
     annotator.apply_and_annotate()  
     plt.show()
 
+
+def plot_waveforms(df, save=False, savepath=None,c_list=None):
+
+    for i in set(df.labels_wave):
+        print(i)
+        t = np.arange(0,6,1/20)
+        fig,ax = plt.subplots()
+        fig.patch.set_visible(False)
+        ax.axis('off')
+        # data_wave_FN_acsf[data_wave_FN_acsf.labels_wave==i]['half_width']
+        wave_i = np.vstack(df[df.labels_wave==i]['waveform']).T
+        plt.plot(t,wave_i[-int(8*20):int(-2*20),:],c=c_list[i],alpha=0.2)
+        plt.plot(t,np.mean(wave_i,axis=1)[-int(8*20):int(-2*20)],c='black',linewidth=2,label=i)
+        plt.xticks([])
+        plt.yticks([])
+        if save:
+            plt.savefig(savepath+'wave_'+str(i)+'.pdf',dpi=200)
+        plt.show()
+
 def plot_radar(data,cols,labels,figsize=(6, 6),lims=None,palette=None,logscale=True,save=False,savepath=None,label_font_size=12,linewidth=0.5):
     fig, ax = plt.subplots(figsize=figsize, subplot_kw=dict(polar=True))
     ax.yaxis.grid(color='lightgray', linestyle='--')
