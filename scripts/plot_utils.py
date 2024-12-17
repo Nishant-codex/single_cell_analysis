@@ -118,15 +118,27 @@ def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,fig
 
         sns.heatmap(mat,cmap=cmap,annot=True,vmin=vmin,vmax=vmax) 
 
-def plot_cosine_mat(data1,data2,label1,label2):
+        if save:
+            plt.savefig(savepath,dpi=300)
+        else:
+            plt.show()
+
+def plot_cosine_mat(data1, data2, label1, label2, save = False, savepath = None):
     cosine_mat = np.zeros((len(set(label1)),len(set(label2))))
     sim_data = cosine_similarity(data1,data2)
+    
     for i in set(label1):
         for j in set(label2):
             idx_FN = label1==i
             idx_SH = label2==j
             cosine_mat[i,j] = np.mean(sim_data[:,idx_FN][idx_SH])
-    return cosine_mat
+    sns.heatmap(cosine_mat,annot=True,vmax=1,vmin=-1)
+
+    if save:
+        plt.savefig(savepath,dpi=200)
+        plt.show()
+    else:
+        plt.show()
 
 def plot_significance_new(data,var,hue,ax,palette='mako',drug=False,test ='Mann-Whitney'):
 
@@ -166,7 +178,6 @@ def plot_significance_new(data,var,hue,ax,palette='mako',drug=False,test ='Mann-
     annotator.configure(test=test, text_format='star', loc='inside')
     annotator.apply_and_annotate()  
     plt.show()
-
 
 def plot_waveforms(df, save=False, savepath=None,c_list=None):
 
@@ -237,3 +248,15 @@ def plot_radar(data,cols,labels,figsize=(6, 6),lims=None,palette=None,logscale=T
         plt.savefig(savepath,dpi=200)
     else:
         plt.show()
+
+def cohend(d1, d2):
+	# calculate the size of samples
+	n1, n2 = len(d1), len(d2)
+	# calculate the variance of the samples
+	s1, s2 = np.var(d1), np.var(d2)
+	# calculate the pooled standard deviation
+	s = np.sqrt(((n1 - 1) * s1 + (n2 - 1) * s2) / (n1 + n2 - 2))
+	# calculate the means of the samples
+	u1, u2 = np.mean(d1), np.mean(d2)
+	# calculate the effect size
+	return (u1 - u2) / s        

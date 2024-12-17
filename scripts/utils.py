@@ -149,7 +149,7 @@ def return_name_date_exp_fn(string):
     string_broken = string.split('_')
     name = string_broken[0]
     date = string_broken[1]
-    exp = string_broken[-1]
+    exp = string_broken[-2]
     year = date[:2]
     month = date[2:4]
 
