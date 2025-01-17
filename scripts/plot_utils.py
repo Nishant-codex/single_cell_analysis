@@ -66,7 +66,7 @@ def pax_plot_data(data,cols,labels,pallete,savepath, save= False):
 
     plt.show()
 
-def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,figsize =[12,5],shuffle = False,save=False,savepath=None,cmap='BrBG_r'):
+def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,figsize =[12,5],shuffle = False,save=False,savepath=None,cmap='BrBG_r',annot_kws=None):
     np.random.seed(42)
     if shuffle:
         fig,ax1 = plt.subplots(figsize =figsize )
@@ -97,13 +97,15 @@ def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,fig
             mat_sh[i,data_[0]] =(data_[1]/np.sum(data_[1]))
 
 
-        sns.heatmap(mat_orig-mat_sh,cmap=cmap,annot=True,ax=ax1,vmin=vmin,vmax=vmax) 
+        sns.heatmap(mat_orig-mat_sh,cmap=cmap,annot=True,ax=ax1,vmin=vmin,vmax=vmax,annot_kws=annot_kws) 
         if save:
             plt.savefig(savepath,dpi=300)
         else:
             plt.show()
 
     else:
+        fig,ax1 = plt.subplots(figsize =figsize )
+
         df = pd.DataFrame(columns=['label1','label2'])
         # df['exp_name1'] = df1.exp_name
         # df['exp_name2'] = df2.exp_name
@@ -116,23 +118,25 @@ def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,fig
             data_ = np.unique(df[df.label1==i]['label2'],return_counts=True)
             mat[i,data_[0]] =(data_[1]/np.sum(data_[1]))
 
-        sns.heatmap(mat,cmap=cmap,annot=True,vmin=vmin,vmax=vmax) 
+        sns.heatmap(mat,cmap=cmap,annot=True,vmin=vmin,vmax=vmax,annot_kws=annot_kws,ax=ax1) 
 
         if save:
             plt.savefig(savepath,dpi=300)
         else:
             plt.show()
 
-def plot_cosine_mat(data1, data2, label1, label2, save = False, savepath = None):
+def plot_cosine_mat(data1, data2, label1, label2,figsize =[12,5], save = False, savepath = None,annot_kws=None):
     cosine_mat = np.zeros((len(set(label1)),len(set(label2))))
+    print(figsize)
     sim_data = cosine_similarity(data1,data2)
-    
+    fig,ax1 = plt.subplots(figsize =figsize )
+
     for i in set(label1):
         for j in set(label2):
             idx_FN = label1==i
             idx_SH = label2==j
             cosine_mat[i,j] = np.mean(sim_data[:,idx_FN][idx_SH])
-    sns.heatmap(cosine_mat,annot=True,vmax=1,vmin=-1)
+    sns.heatmap(np.round(cosine_mat,decimals=2),ax=ax1,annot=True,vmax=1,vmin=-1,annot_kws=annot_kws)
 
     if save:
         plt.savefig(savepath,dpi=200)
