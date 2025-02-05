@@ -52,6 +52,12 @@ def return_acsf_and_drug(df,cond,joint=False,remove_duplicates=True):
         df_drug = df_drug[df_drug.exp_name.isin(common_exps)]
 
     if joint:
+        df_acsf.reset_index(inplace=True)
+        df_acsf = df_acsf.drop(columns='index')
+
+        df_drug.reset_index(inplace=True)
+        df_drug = df_drug.drop(columns='index')
+
         return pd.concat([df_acsf,df_drug])
     else:
         return df_acsf, df_drug

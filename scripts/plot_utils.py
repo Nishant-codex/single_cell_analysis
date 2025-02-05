@@ -178,7 +178,13 @@ def plot_significance_new(data,var,hue,ax,palette='mako',drug=False,test ='Mann-
     pairs = np.unique(data[hue])
     pairs = [i for i in combinations(pairs,2)]
 
-    annotator = Annotator(ax,pairs, data=data, x=hue,palette=palette, y=var)
+    annotator = Annotator(ax, 
+                          pairs, 
+                          data=data, 
+                          x=hue, 
+                          palette=palette, 
+                          y=var)
+    
     annotator.configure(test=test, text_format='star', loc='inside')
     annotator.apply_and_annotate()  
     plt.show()
