@@ -79,4 +79,4 @@ def heterogeniety_for_drug(df,cond,cols=None):
         cosine_mat[1,1] = np.mean(cosine_similarity(normalize(np.vstack(wave_acsf['waveform'].to_numpy())),normalize(np.vstack(wave_acsf['waveform'].to_numpy()))))
 
 
-    sns.heatmap(cosine_mat,vmax=1,vmin=-1,annot=True,cmap = 'Spectral')    
+    sns.heatmap(cosine_mat,vmax=1,vmin=-1,annot=True,cmap = 'Spectral',annot_kws={'fontsize':14})    
