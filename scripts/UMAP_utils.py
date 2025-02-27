@@ -184,7 +184,7 @@ def plot_UMAP_combined(data_exc,data_inh,neighbours,distance,labels,random_state
   
     plt.show()
 
-def plot_UMAP_clusters_single(data_inh, neighbours, distance, res_louvain, random_state,size =0.2,annotate=False,norm=True, c_list=None ,savepath=None,save=False):
+def plot_UMAP_clusters_single(data_inh, neighbours, distance, res_louvain, random_state,size =0.2,annotate=False,norm=True, c_list=None ,figsize=[8,8],savepath=None,save=False):
     """plots UMAP for excitatory and inhibitory cells 
 
     Args:
@@ -205,7 +205,7 @@ def plot_UMAP_clusters_single(data_inh, neighbours, distance, res_louvain, rando
     reducer = umap.UMAP(n_neighbors=neighbours,min_dist=dist,random_state=random_state)
     mapper = reducer.fit(data_umap)
     
-    fig = plt.figure(figsize=[8,8])
+    fig = plt.figure(figsize=figsize)
     ax12d = fig.add_subplot(1,1,1)
     
     louvain = Louvain(resolution=res_louvain,random_state=random_state)
