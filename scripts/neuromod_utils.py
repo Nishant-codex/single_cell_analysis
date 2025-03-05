@@ -3,6 +3,7 @@ import seaborn as sns
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import normalize
 import numpy as np
+from scipy import stats
 
 
 def binarize_EI_labels(labels, e_vals):
@@ -38,6 +39,65 @@ def neumericalize_neurmods(df):
                     'cirazoline':9,
                     'agoanta'   :10})
     return numeric_list
+
+def exponential_smoothing(data, alpha):
+    """
+    Implements Simple Exponential Smoothing from scratch.
+    
+    Parameters:
+        data (list or numpy array): The time series data to smooth.
+        alpha (float): The smoothing factor (0 < alpha < 1).
+    
+    Returns:
+        numpy array: Smoothed values.
+    """
+    smoothed = np.zeros_like(data)
+    smoothed[0] = data[0]  # Initialize with the first data point
+    
+    for t in range(1, len(data)):
+        smoothed[t] = alpha * data[t] + (1 - alpha) * smoothed[t - 1]
+    
+    return smoothed
+
+def return_paired_t_test(data_frame):
+    print(data_frame.cond.unique())
+    t_statistic, p_value = stats.ttest_rel(data_frame[data_frame.cond=='acsf']['norm_peak_distance'], data_frame[data_frame.cond!='acsf']['norm_peak_distance'])
+    print('norm_peak_distance', t_statistic, p_value)
+
+    t_statistic, p_value = stats.ttest_rel(data_frame[data_frame.cond=='acsf']['decay_time'], data_frame[data_frame.cond!='acsf']['decay_time'])
+    print('decay_time', t_statistic, p_value)
+
+def rise_time(data):
+    # data = data
+    argmax = np.argmax(data)
+    data_mod = data[argmax:]
+    max_val = np.max(data_mod)
+    min_val = np.min(data_mod)
+    
+    val_10 = min_val + 0.1*(max_val-min_val) 
+    val_90 = min_val + 0.9*(max_val-min_val)     
+    arg_10 = np.where(data_mod<val_10)[0][0]
+    arg_90 = np.where(data_mod<val_90)[0][0]
+    decay_time = (arg_10-arg_90)/20
+    return decay_time, max_val
+
+def return_peak_and_decay(df):
+    peak_vals_drug = []
+    decay_vals_drug = []
+
+    for y_drug in df['sta'].to_numpy():
+        # try:
+            y_smooth_drug =exponential_smoothing(np.flip(y_drug),0.2)  
+
+            decay_drug, peak_drug = rise_time(y_smooth_drug)
+            peak_vals_drug.append(peak_drug)
+            decay_vals_drug.append(decay_drug)
+    
+            # df['peak'] = peak_vals_drug
+        # except:
+        #     pass
+    df['decay_time'] = decay_vals_drug
+    return df
 
 def return_acsf_and_drug(df,cond,joint=False,remove_duplicates=True):
     exps = list(set(df[df.cond.isin(cond)]['exp_name']))
