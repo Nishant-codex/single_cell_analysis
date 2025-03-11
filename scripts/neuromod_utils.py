@@ -6,6 +6,52 @@ import numpy as np
 from scipy import stats
 
 
+def plot_FI_vs_FR(data_acsf,data_drug,ax=None, plot=True, c = 'blue',x_lim = None, y_lim = None, save=False, savepath = None):
+    ind_na = np.array(data_drug['FI'].isna())
+    c_labels = []
+    data_acsf = data_acsf[~ind_na]
+    data_drug = data_drug[~ind_na]
+
+    for i in data_acsf.ei_labels:
+        if i==1.0:
+            c_labels.append('Exc')
+        else:
+            c_labels.append('Inh')
+
+    c = c_labels
+    delta_fi = (np.array(data_drug['FI']) - np.array(data_acsf['FI']))/np.array(data_acsf['FI'])
+    delta_fr = (np.array(data_drug['fr']) - np.array(data_acsf['fr']))/np.array(data_acsf['fr'])
+    df_temp = pd.DataFrame({'$\Delta$f/f':np.float32(delta_fr),
+                                '$\Delta$FI/FI':np.float32(delta_fi),
+                                'color':c})
+
+    df_temp = df_temp[(df_temp['$\Delta$FI/FI']>=y_lim[0]) &(df_temp['$\Delta$FI/FI']<=y_lim[1])]
+    df_temp = df_temp[(df_temp['$\Delta$f/f']>=x_lim[0]) &(df_temp['$\Delta$f/f']<=x_lim[1])]
+
+    if plot:
+        if ax is None:
+
+            g = sns.JointGrid(data=df_temp, x="$\Delta$f/f", y="$\Delta$FI/FI",hue='color',palette=['blue','red'])
+            g.plot(sns.scatterplot, sns.violinplot)
+            g.ax_joint.axhline(y=0, color='gray', linestyle='--')  # Horizontal line at y=16
+            g.ax_joint.axvline(x=0, color='gray', linestyle='--')  # Horizontal line at y=16
+
+            if x_lim !=None and y_lim !=None: 
+                g.ax_joint.set_xlim(x_lim)
+                g.ax_joint.set_ylim(y_lim)
+            # plt.legend(['inh','exc'])
+
+            plt.xlabel('$\Delta$fr/fr')
+            plt.ylabel('$\Delta$FI/FI')
+
+            if save:
+                plt.savefig(savepath,dpi=200)
+            plt.show()
+        else:
+            ax.scatter(delta_fr[~ind_na], delta_fi[~ind_na],c=c) 
+
+    return df_temp
+
 def binarize_EI_labels(labels, e_vals):
     temp_labels = labels
     for idx,vals in enumerate(labels):
