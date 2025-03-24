@@ -303,8 +303,6 @@ def binarize_EI_labels(labels, e_vals):
 
     return temp_labels
 
-
-
 def return_confusion_matrix(df1,df2,label1_name,label2_name,shuffle = False):
     np.random.seed(42)
     if shuffle:

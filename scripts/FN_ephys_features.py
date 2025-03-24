@@ -1079,7 +1079,7 @@ def return_all_input_data_with_just_files(path_to_analyzed_files,just_NC=False, 
     files = os.listdir(path_to_analyzed_files)
     all_ephys_data = []
     for f in files:
-            # f = 'NC_170815_aCSF_D1ago_E3_analyzed.mat'
+            f = 'NC_170815_aCSF_D1ago_E3_analyzed.mat'
             data = loadmatInPy(path_to_analyzed_files+f)
             for trial, instance in enumerate(data):
                 try:
@@ -1087,7 +1087,6 @@ def return_all_input_data_with_just_files(path_to_analyzed_files,just_NC=False, 
                     # trialnr = instance['input_generation_settings']['trialnr']
 
                     exp =  f.split('.')[0]
-                    print(exp)
                     if just_NC:
                         exp = return_name_date_exp_fn_NC_data(exp)
                     else:
@@ -1102,7 +1101,7 @@ def return_all_input_data_with_just_files(path_to_analyzed_files,just_NC=False, 
                     all_ephys_data.append(ephys_obj)
                 except:
                         print('problem with ',f[:-13],' trial ',trial)
-            # break
+            break
 
     return all_ephys_data
 
@@ -1480,10 +1479,10 @@ def run_and_save(func,savepath,save=True,**args):
 # %%xuan_29319_E1
 # data = loadmatInPy("G:/My Drive/Analyzed/xuan_29-3-19_E1_analyzed.mat")
 
-data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
+# data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
 # data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
 
-# data = return_all_input_data_with_just_files("D:/Analyzed/",just_NC=False,compute_spikes=True)
+data = return_all_input_data_with_just_files("D:/Analyzed/",just_NC=False,compute_spikes=True)
 
 # "D:\Analyzed\NC_170821_aCSF_D1ago_E4_analyzed.mat"
 

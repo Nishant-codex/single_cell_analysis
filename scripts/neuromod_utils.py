@@ -145,7 +145,7 @@ def return_peak_and_decay(df):
     df['decay_time'] = decay_vals_drug
     return df
 
-def return_acsf_and_drug(df,cond,joint=False,remove_duplicates=True):
+def return_acsf_and_drug(df,cond,joint=False,remove_duplicates=True,sample=None):
     exps = list(set(df[df.cond.isin(cond)]['exp_name']))
     df_new = df[df.exp_name.isin(exps)]
     df_acsf = df_new[df_new.cond == 'acsf']
@@ -166,6 +166,9 @@ def return_acsf_and_drug(df,cond,joint=False,remove_duplicates=True):
 
         return pd.concat([df_acsf,df_drug])
     else:
+        if sample!=None:    
+            df_acsf = df_acsf.sample(n=sample)
+            df_drug = df_drug.sample(n=sample)
         return df_acsf, df_drug
     
 def heterogeniety_for_drug(df,cond,cols=None):
