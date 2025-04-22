@@ -3,15 +3,13 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import normalize 
 from matplotlib.patches import Patch
 import numpy as np
-import paxplot
+# import paxplot
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import normalize
 import seaborn as sns 
 import pandas as pd 
 
-
-import paxplot
 from sklearn.preprocessing import MinMaxScaler
 
 from sklearn.preprocessing import StandardScaler
