@@ -147,7 +147,20 @@ def returnVsandIs(path_cc: str, filename: str)->dict:
     return return_dict
 
 def plot_steps(path_cc,filename):
+    """ to plot all the steps of a single CC cell, voltage and input current side by side
+    Args:
+        path_cc (str): path to all CC files 
+        filename (str): name of the file to be plotted 
+    """
+
     def order_list(data):
+        """ somtimes the list of keys are ordered such that the last value is at the beginning. This function sorts it.
+        Args:
+            data (_type_): the list of keys
+        Returns:
+            list : returns an ordered list
+        """
+
         if data[0][-3] == '0':
             temp_list = data[2:]
             rear_vals = data[:2]
@@ -202,7 +215,10 @@ def get_threshold_fontaine(membrane_potential, dt, searchthreshold, windown, ref
 
     # First value of which each of the derivatives specified in derthreshold
     # exceeds the specified value
+    # The first column of derthreshold is the order of the derivative, the second
+    # column is the threshold value for that derivative.
 
+    
     [Nder, _] = np.shape(derthreshold)
     _, Nvolt = membrane_potential.shape
     if Nvolt == 1:
@@ -280,15 +296,13 @@ def get_threshold_fontaine(membrane_potential, dt, searchthreshold, windown, ref
     return np.array(spikeindices, dtype=np.int32), thresholds, np.array(thresholdindices, dtype=np.int32)
 
 def check_for_faultycell(val_dict, name, exceptions=None):
-    """_summary_
-
+    """ checks if the cell is faulty or not, by checking if there are more than 10 spikes below -0.08 mV
     Args:
-        val_dict (_type_): _description_
-        name (_type_): _description_
-        exceptions (_type_, optional): _description_. Defaults to None.
-
+        val_dict (dict): a dictionary object containing all Vs and Is for all steps     
+        name (str): name of the file to be checked  
+        exceptions (str, optional): if the name is in the exceptions, it will return True. Defaults to None.
     Returns:
-        _type_: _description_
+        bool: True if the cell is faulty, False otherwise
     """
     if exceptions == None:
         trials = len(val_dict.keys())
@@ -310,14 +324,16 @@ def check_for_faultycell(val_dict, name, exceptions=None):
         return True
 
 def collect_all_spike_data(path_cc, df_CC_exp , condition):
-    """_summary_
 
+    """ collects all the spike data for a given condition from the df_CC_exp dataframe
     Args:
-        condition (_type_): _description_
-
+        path_cc (str): path to all CC files 
+        df_CC_exp (pd.DataFrame): dataframe containing all the CC files and their conditions
+        condition (str): condition to be used for filtering the dataframe
     Returns:
-        _type_: _description_
+        list: a list of dictionaries containing all the spike data for the given condition  
     """
+
     dt = 1/20000
     searchthreshold = 0
     thresholdwindow = [1, 0.25]
@@ -409,14 +425,16 @@ def collect_all_spike_data(path_cc, df_CC_exp , condition):
     return [files_with_spks_and_thresholds_drug, files_with_spks_and_thresholds_acsf]
 
 def collect_singlecell_spike_data(path_cc, filename ):
-    """_summary_
 
-    Args:
-        condition (_type_): _description_
-
-    Returns:
-        _type_: _description_
+    """ collects all the spike data for a single cell from the CC file  
+    Args:   
+        path_cc (str): path to all CC files 
+        filename (str): name of the file to be processed
+    Returns:    
+        list: a list of dictionaries containing all the spike data for the given file  
     """
+
+
     dt = 1/20000
     searchthreshold = 0
     thresholdwindow = [1, 0.25]
@@ -450,6 +468,15 @@ def collect_singlecell_spike_data(path_cc, filename ):
             return 'faulty'
 
 def return_name_date_exp_fn(string):
+    """ returns the name, date and experiment name from the string. The string should be in the format of 'name_date_exp' or 'name-date-exp' or 'name_date_exp_1' or 'name-date-exp-1'
+    Args:
+        string (str): the string to be processed
+    Returns:
+        str: the processed string in the format of 'name_date_exp'
+    """
+
+    
+    
     if 'NC' in string:
         string_broken = string.split('_')
         name = string_broken[0]
