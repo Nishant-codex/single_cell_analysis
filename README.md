@@ -6,8 +6,8 @@
 
 This repository contains the analysis code and Jupyter notebooks accompanying the publication:  
 
-Neuronal Identity is Not Static—An Input-Driven Perspective \\
-Nishant Joshi, Sven van Der Burg, Tansu Celikel, Fleur Zeldenrust
+Neuronal Identity is Not Static—An Input-Driven Perspective,
+Nishant Joshi, Sven van Der Burg, Tansu Celikel, Fleur Zeldenrust,
 https://doi.org/10.1101/2024.10.16.618657 
 
 ---
