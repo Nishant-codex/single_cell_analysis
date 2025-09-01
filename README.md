@@ -6,7 +6,7 @@
 
 This repository contains the analysis code and Jupyter notebooks accompanying the publication:  
 
-Neuronal Identity is Not Static—An Input-Driven Perspective
+Neuronal Identity is Not Static—An Input-Driven Perspective \\
 Nishant Joshi, Sven van Der Burg, Tansu Celikel, Fleur Zeldenrust
 https://doi.org/10.1101/2024.10.16.618657 
 
@@ -20,7 +20,7 @@ Key methods and analyses:
 - **Clustering** of single-cell responses across experimental conditions (ACSF vs. drug)  
 - **Dimensionality reduction**: PCA, UMAP, and probabilistic CCA (pCCA)  
 - **Manifold alignment** for comparing cell populations
-- **MCFA** for comparing comparting extracted features for heterogeneitey  
+- **MCFA** for comparing extracted features for heterogeneity  
 - Exploratory analyses of **cluster stability**, **spike train metrics**, and **impedance profiles**  
 
 ---
