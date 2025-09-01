@@ -19,7 +19,8 @@ Key methods and analyses:
 - **Feature extraction** from electrophysiological recordings  
 - **Clustering** of single-cell responses across experimental conditions (ACSF vs. drug)  
 - **Dimensionality reduction**: PCA, UMAP, and probabilistic CCA (pCCA)  
-- **Manifold alignment** for comparing cell populations  
+- **Manifold alignment** for comparing cell populations
+- **MCFA** for comparing comparting extracted features for heterogeneitey  
 - Exploratory analyses of **cluster stability**, **spike train metrics**, and **impedance profiles**  
 
 ---
