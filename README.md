@@ -87,14 +87,6 @@ flowchart TD
 If you use this code or workflows in your research, please cite:  
 
 ```
-@article{YourCitationKey,
-  author  = {Your Name and Coauthors},
-  title   = {Your Paper Title},
-  journal = {Journal Name},
-  year    = {Year},
-  doi     = {DOI}
-}
-
 
 @article {Joshi2024.10.16.618657,
 	author = {Joshi, Nishant and van Der Burg, Sven and Celikel, Tansu and Zeldenrust, Fleur},
