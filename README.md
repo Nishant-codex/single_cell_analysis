@@ -1,6 +1,6 @@
 # Single-Cell Electrophysiology Analysis & Clustering
 
-bioRxiv 2024.10.16.618657; doi: https://doi.org/10.1101/2024.10.16.618657
+
 [![Paper DOI](https://doi.org/10.1101/2024.10.16.618657)  
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
