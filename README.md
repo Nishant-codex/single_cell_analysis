@@ -75,10 +75,10 @@ Below is a simplified workflow of the analysis pipeline:
 ```mermaid
 flowchart TD
     A[Raw Electrophysiology Data] --> B[Feature Extraction]
-    B --> C[UMAP+Louvain / MCFA]
-    C --> D[Clustering & Manifold Alignment]
-    D --> E[Comparative Analysis: ACSF vs Drug]
-    E --> F[Figures & Results]
+    B --> D[Clustering & Manifold Alignment]
+	D --> E[Multi-set correlation and Factor Analysis]
+    E --> F[Comparative Analysis: ACSF vs Drug]
+    F --> G[Figures & Results]
 ```
 
 ---
