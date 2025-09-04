@@ -1,4 +1,9 @@
 #%%
+'t-SNE analysis of single cell features' 
+""" 
+Created on Wed Mar  1 12:06:26 2023
+
+"""
 from sklearn import manifold
 from sklearn.cluster import KMeans
 import os
@@ -96,8 +101,11 @@ def plot_tsne_with_conditions(data_inh:list,data_exc:list,ax_inh,ax_exc,c='blue'
     """_summary_
 
     Args:
-        data_inh (dict): _description_
-        data_exc (dict): _description_
+        data_inh (list): _description_
+        data_exc (list): _description_
+        ax_inh (_type_): _description_
+        ax_exc (_type_): _description_
+        c (str, optional): _description_. Defaults to 'blue'.
     """
     scalar_inh_tsne = StandardScaler()
     scalar_exc_tsne = StandardScaler()
