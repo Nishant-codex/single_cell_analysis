@@ -1,3 +1,10 @@
+
+""" 
+Created on Wed Mar  1 12:06:26 2023
+By Nishant Joshi
+This script contains utility functions for analyzing neuromodulator effects on single cells
+"""
+
 import pandas as pd 
 import seaborn as sns 
 from sklearn.metrics.pairwise import cosine_similarity

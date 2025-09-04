@@ -1,3 +1,9 @@
+'''
+
+Created on Wed Mar  1 12:06:26 2023
+By Nishant Joshi
+This script contains functions to perform PCA analysis on single cell features
+'''
 import pickle
 from typing import Set
 import numpy as np 
@@ -187,11 +193,16 @@ def plot_pca(data_inh,data_exc,plot_loadings=False,feature_sub=None ):
     plt.show()
 
 def plot_pca_multiple_conditions(data,ax,plot_loadings=False,c='blue',type_c=None):
-    """_summary_
-
+    '''this function is to plot PCA of inh and exc cells one off
     Args:
-        data (list): _description_
-    """
+        data (dict): _inhibitory and excitatory data    
+        ax (_type_): _description_
+        plot_loadings (bool, optional): _description_. Defaults to False.
+        c (str, optional): _description_. Defaults to 'blue'.
+        type_c (_type_, optional): _description_. Defaults to None. 
+        Returns:
+        None:'''
+
     features = ['Vm_avg','dvdt_p','dvdt_n','resistance','thr','adaptation',
     'isi','peak','peak_adaptation','ap_width','hyp_value','fist_spike','up_down_ratio',
     'isi_adaptation','thr_adp_ind','psth','int_fr','fr','sub_thr','spk_fr_adp','imp']
@@ -225,12 +236,14 @@ def plot_pca_multiple_conditions(data,ax,plot_loadings=False,c='blue',type_c=Non
     ax.set_title(type_c)           
 
 def plot_pca_with_loadings(data:dict,features:list):
-    """_summary_
-
+    '''
+    this function is to plot PCA of inh and exc cells one off
     Args:
-        data (dict): _description_
-        features (list): _description_
-    """
+        data (dict): _inhibitory and excitatory data
+        features (list): list of feature names
+        Returns:
+            None:
+    '''
     features = features
     scalar = StandardScaler()
 
@@ -275,7 +288,13 @@ def plot_pca_with_loadings(data:dict,features:list):
     plt.show()
 
 def plot_PCA_oneoff(data_inh,data_exc):
-
+    """this function is to plot PCA of inh and exc cells one off
+    Args:
+        data_inh (_type_): _inhibitory data
+        data_exc (_type_): _excitatory data 
+    Returns:
+        None: 
+            """
     #@title plot PCA one off 
     scalar_inh = StandardScaler()
     scalar_inh.fit(data_inh['all'])

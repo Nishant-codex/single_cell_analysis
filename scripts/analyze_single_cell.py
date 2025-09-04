@@ -1,5 +1,8 @@
 '''
 Created on Wed Mar  1 12:06:26 2023
+This script contains functions to analyze single cell data
+By Nishant Joshi	
+
 '''
 import os
 import sys 

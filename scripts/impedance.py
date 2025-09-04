@@ -1,4 +1,9 @@
+""" 
+Created on Wed Mar  1 12:06:26 2023
+By Nishant Joshi
+This script contains functions to compute and plot impedance of single cells adapted from Wytse's code
 
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 

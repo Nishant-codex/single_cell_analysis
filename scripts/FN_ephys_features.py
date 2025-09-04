@@ -1,4 +1,11 @@
 #%%
+'''
+Created on Wed Mar  1 12:06:26 2023
+By Nishant Joshi
+This script contains functions to perform feature extraction from single cell electrophysiological data 
+from in vitro Frozen noise recordings
+
+'''
 import pandas as pd
 import numpy as np
 import seaborn as sns

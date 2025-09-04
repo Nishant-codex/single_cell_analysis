@@ -1,3 +1,8 @@
+'''
+Created on Wed Mar  1 12:06:26 2023
+By Nishant Joshi
+This script contains utility functions for UMAP analysis of single cell data
+'''
 
 import sklearn.cluster as cluster
 from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score

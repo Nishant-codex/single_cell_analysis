@@ -1,3 +1,8 @@
+'''
+Created on Wed Mar  1 12:06:26 2023
+By Nishant Joshi
+This script contains functions to analyze cluster stability in single cell data
+'''
 import numpy as np 
 import seaborn as sns 
 import matplotlib.pyplot as plt 
