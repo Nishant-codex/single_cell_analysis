@@ -17,6 +17,7 @@ This project provides the computational workflows for analyzing **single-cell el
 
 Key methods and analyses:  
 - **Feature extraction** from electrophysiological recordings  
+- **Model fitting** using GLIF models (see https://github.com/Nishant-codex/GIFFittingToolbox/tree/master)
 - **Clustering** of single-cell responses across experimental conditions (ACSF vs. drug)  
 - **Dimensionality reduction**: PCA, UMAP, and probabilistic CCA (pCCA)  
 - **Manifold alignment** for comparing cell populations
