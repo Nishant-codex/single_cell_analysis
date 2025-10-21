@@ -1,30 +1,8 @@
 
-import os
-import pickle
-from typing import Set
 import numpy as np
-from numpy.lib.function_base import append
-import scipy.io as spio
-from scipy.io import loadmat, savemat
-import importlib.util
-from sklearn import datasets, linear_model
-from scipy.sparse import data
-from plotnine import ggplot, geom_point, aes, stat_smooth, facet_wrap
-from plotnine.data import mtcars
-import seaborn as sns
+from scipy.io import loadmat
 import matplotlib.pyplot as plt
-import pandas as pd
-from sklearn.decomposition import SparsePCA
-from sklearn.cluster import KMeans
-from sklearn import metrics
-from scipy.spatial.distance import cdist
-from matplotlib.ticker import NullFormatter
-from sklearn import manifold, datasets
-from sklearn.preprocessing import normalize
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-import pickle as pkl
-from pylab import *
+
 from scipy.signal import find_peaks
 
 
@@ -97,7 +75,7 @@ def plot_single_cell(path_cc: str, filename: str,plottype=None):
         if expand:
             V = Vs
             # spk_ind, thr, thr_ind = get_threshold_fontaine(np.expand_dims(np.array(V).flatten(),axis=1),dt=dt,searchthreshold = searchthreshold,windown = nwindow,refractory_period = refractory_period,derthreshold =derthreshold )
-            ax[0].plot(np.array(V).flatten())
+            ax[0].plot(np.array(V).flatten()*100)
             # V = np.array(V).flatten()
             # ax[0].plot(spk_ind,V[spk_ind],'x', markersize=12)
             # ax[0].plot(thr_ind,V[thr_ind],'o', markersize=4)

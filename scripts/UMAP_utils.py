@@ -4,35 +4,18 @@ By Nishant Joshi
 This script contains utility functions for UMAP analysis of single cell data
 '''
 
-import sklearn.cluster as cluster
-from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
-from sklearn import manifold
 from sklearn.cluster import KMeans
-import os
-import pickle
-from typing import Set
 import numpy as np 
-from numpy.lib.function_base import append 
-from scipy.io import loadmat, savemat
-import importlib.util
-from scipy.sparse import data 
 import seaborn as sns 
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.cluster import KMeans
-from sklearn import metrics
-from scipy.spatial.distance import cdist
-from matplotlib.ticker import NullFormatter
-from sklearn.decomposition import PCA,IncrementalPCA,SparsePCA
 from sklearn.preprocessing import StandardScaler, normalize
 # from residual_code.Infomation_transfer.PCA import shuffle_prams
-from matplotlib.ticker import NullFormatter
-from sklearn import manifold, datasets
 # from analyze_single_cell import collect_drug_and_acsf
 # from ephys_set import return_all_ephys_dict
-from sknetwork.clustering import Louvain,get_modularity
+from sknetwork.clustering import Louvain
 
-import pickle
 # from residual_code.Infomation_transfer.PCA import * 
 import umap.umap_ as umap
 

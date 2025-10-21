@@ -8,33 +8,15 @@ from in vitro Frozen noise recordings
 '''
 import pandas as pd
 import numpy as np
-import seaborn as sns
 import os 
-from scipy.io import loadmat, savemat
-import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 from scipy.sparse import data
-from scipy.spatial.distance import cdist
-from matplotlib.ticker import NullFormatter
-from sklearn.cluster import KMeans
-from sklearn import datasets, linear_model
-from sklearn import metrics
-from sklearn.decomposition import SparsePCA
-from sklearn import manifold, datasets
-from sklearn.preprocessing import normalize
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-from math import isnan
 from utils import *
 # from residual_code.Infomation_transfer.analyze_single_cell import collect_drug_and_acsf
 # from single_cell_analysis.scripts.impedance import *
 from sklearn.linear_model import LinearRegression
 import neo
 from quantities import *
-from elephant import statistics
-from elephant.kernels import GaussianKernel
-from elephant.statistics import isi, cv
-from elephant.statistics import time_histogram, instantaneous_rate
 from elephant import sta
 
 

@@ -4,22 +4,7 @@ This script contains functions to analyze single cell data
 By Nishant Joshi	
 
 '''
-import os
-import sys 
-import pickle
-import numpy as np 
-from numpy.lib.function_base import append 
-import scipy.io as spio
-from scipy.io import loadmat, savemat
-import importlib.util
-import sklearn
-from sklearn import datasets, linear_model
-import matplotlib.pyplot as plt
-from scipy.sparse import data 
 
-import pandas as pd 
-import seaborn as sns 
-import matplotlib.pyplot as plt
 import sys
 from utils import *
 
