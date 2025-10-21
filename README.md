@@ -12,7 +12,7 @@ https://doi.org/10.1101/2024.10.16.618657
 
 ---
 
-## 🔬 Overview
+## Overview
 This project provides the computational workflows for analyzing **single-cell electrophysiological recordings** and reproduces the results presented in the associated paper.  
 
 Key methods and analyses:  
@@ -25,7 +25,7 @@ Key methods and analyses:
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 ```
 notebooks_acsf/        # Analysis under ACSF conditions
 notebooks_drug/        # Analysis under drug conditions
@@ -37,7 +37,7 @@ README.md              # Project description and usage
 
 ---
 
-## ⚙️ Installation
+## Installation
 Clone the repository and install dependencies:  
 
 ```bash
@@ -55,7 +55,7 @@ conda activate singlecell
 
 ---
 
-## ▶️ Usage
+## Usage
 To reproduce the analyses, open the Jupyter notebooks:  
 
 ```bash
@@ -70,7 +70,7 @@ Figures and results generated from these notebooks correspond directly to the an
 
 ---
 
-## 📊 Workflow
+## Workflow
 Below is a simplified workflow of the analysis pipeline:  
 
 ```mermaid
@@ -84,7 +84,7 @@ flowchart TD
 
 ---
 
-## 📖 Citation
+## Citation
 If you use this code or workflows in your research, please cite:  
 
 ```
@@ -102,5 +102,5 @@ If you use this code or workflows in your research, please cite:
 
 ---
 
-## 📜 License
+## License
 This project is licensed under the [MIT License](LICENSE).  
