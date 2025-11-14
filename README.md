@@ -4,7 +4,7 @@
 [![Paper DOI](https://img.shields.io/badge/Paper-DOI-blue)](https://doi.org/10.1101/2024.10.16.618657)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-This repository contains the analysis code and Jupyter notebooks accompanying the publication:  
+This repository contains the analysis code, Jupyter notebooks, and extracted feature files accompanying the publication:  
 
 Neuronal Identity is Not Static—An Input-Driven Perspective,
 Nishant Joshi, Sven van Der Burg, Tansu Celikel, Fleur Zeldenrust,
