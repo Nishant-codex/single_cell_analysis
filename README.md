@@ -1,7 +1,7 @@
 # Single-Cell Electrophysiology Analysis & Clustering
 
 
-[![Paper DOI](https://img.shields.io/badge/Paper-DOI-blue)](https://doi.org/10.1101/2024.10.16.618657)
+[![Paper DOI](https://img.shields.io/badge/Paper-DOI-blue)](https://doi.org/10.1371/journal.pcbi.1013821)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 This repository contains the analysis code, Jupyter notebooks, and extracted feature files accompanying the publication:  
