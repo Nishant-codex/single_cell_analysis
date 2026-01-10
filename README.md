@@ -1,14 +1,12 @@
 # Single-Cell Electrophysiology Analysis & Clustering
 
 
-[![Paper DOI](https://img.shields.io/badge/Paper-DOI-blue)](https://doi.org/10.1101/2024.10.16.618657)
+[![Paper DOI](https://img.shields.io/badge/Paper-DOI-blue)](https://doi.org/10.1371/journal.pcbi.1013821)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-This repository contains the analysis code and Jupyter notebooks accompanying the publication:  
+This repository contains the analysis code, Jupyter notebooks, and extracted feature files accompanying the publication:  
 
-Neuronal Identity is Not Static—An Input-Driven Perspective,
-Nishant Joshi, Sven van Der Burg, Tansu Celikel, Fleur Zeldenrust,
-https://doi.org/10.1101/2024.10.16.618657 
+Joshi N, van Der Burg S, Celikel T, Zeldenrust F (2025) Neuronal identity is not static: An input-driven perspective. PLoS Comput Biol 21(12): e1013821. https://doi.org/10.1371/journal.pcbi.1013821 
 
 ---
 
@@ -90,14 +88,15 @@ If you use this code or workflows in your research, please cite:
 
 ```
 
-@article {Joshi2024.10.16.618657,
-	author = {Joshi, Nishant and van Der Burg, Sven and Celikel, Tansu and Zeldenrust, Fleur},
-	title = {Neuronal Identity is Not Static{\textemdash}An Input-Driven Perspective},
-	elocation-id = {2024.10.16.618657},
-	year = {2025},
-	doi = {10.1101/2024.10.16.618657},
-	publisher = {Cold Spring Harbor Laboratory},
-	journal = {bioRxiv}
+@article{joshi2025neuronal,
+  title={Neuronal identity is not static: An input-driven perspective},
+  author={Joshi, Nishant and van Der Burg, Sven and Celikel, Tansu and Zeldenrust, Fleur},
+  journal={PLOS Computational Biology},
+  volume={21},
+  number={12},
+  pages={e1013821},
+  year={2025},
+  publisher={Public Library of Science San Francisco, CA USA}
 }
 ```
 
