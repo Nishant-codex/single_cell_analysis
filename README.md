@@ -4,9 +4,13 @@
 [![Paper DOI](https://img.shields.io/badge/Paper-DOI-blue)](https://doi.org/10.1371/journal.pcbi.1013821)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-This repository contains the analysis code, Jupyter notebooks, and extracted feature files accompanying the publication:  
+This repository contains the analysis code, Jupyter notebooks, and extracted feature files accompanying the following publications:  
 
 Joshi N, van Der Burg S, Celikel T, Zeldenrust F (2025) Neuronal identity is not static: An input-driven perspective. PLoS Comput Biol 21(12): e1013821. https://doi.org/10.1371/journal.pcbi.1013821 
+
+Neuromodulatory Control of Cortical Function: Cell-Type Specific Regulation of Neuronal Information Transfer
+Nishant Joshi, Xuan Yan, Niccolo Calcini, Payam Safavi, Asli Ak, Koen Kole, Sven van der Burg, Tansu Celikel, Fleur Zeldenrust
+bioRxiv 2026.03.13.711516; doi: https://doi.org/10.64898/2026.03.13.711516
 
 ---
 
