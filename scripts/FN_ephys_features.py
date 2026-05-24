@@ -3,7 +3,7 @@
 Created on Wed Mar  1 12:06:26 2023
 By Nishant Joshi
 This script contains functions to perform feature extraction from single cell electrophysiological data 
-from in vitro Frozen noise recordings
+from in-vitro Frozen noise recordings
 
 '''
 import pandas as pd
@@ -24,7 +24,7 @@ from elephant import sta
 #%%
 
 class EphysSet:
-
+    
     def __init__(self,data,cond,exp_name,trialnr):
 
         self.data = data
@@ -1465,211 +1465,221 @@ def run_and_save(func,savepath,save=True,**args):
         else:
             return df1,df2       
 
-# %%xuan_29319_E1
-# data = loadmatInPy("G:/My Drive/Analyzed/xuan_29-3-19_E1_analyzed.mat")
 
-# data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
-# data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
+if __name__ == "__main__":
 
-data = return_all_input_data_with_just_files("D:/Analyzed/",just_NC=False,compute_spikes=True)
+    # data = loadmatInPy("G:/My Drive/Analyzed/xuan_29-3-19_E1_analyzed.mat")
 
-# "D:\Analyzed\NC_170821_aCSF_D1ago_E4_analyzed.mat"
+    # data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
+    # data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
 
-
-# data = test_single_exp("D:/Analyzed/",'NC_170821_aCSF_D1ago_E4',compute_spikes=True)
-# imps = return_all_impedance("D:/Analyzed/")
-# waves = return_all_waveforms_DB("D:/Analyzed/")
-# stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
-# stas = return_all_STA_h_db("D:/Analyzed/")
+    data = return_all_input_data_with_just_files("D:/Analyzed/",just_NC=False,compute_spikes=True)
 
 
-# stas = return_all_STA_norm("D:/Analyzed/")
+    # "D:\Analyzed\NC_170821_aCSF_D1ago_E4_analyzed.mat"
 
 
-#%% Fr saving all STAs
-df = pd.DataFrame(columns=['sta','baseline','peak_distance','cond','exp_name','trial'])
-for i in range(len(stas)):
-    df.loc[i,'sta'] = np.array(np.hstack(stas[i])[:-3],dtype=np.float32)
-    df.loc[i,['baseline','peak_distance','cond','exp_name','trial']] = np.hstack(stas[i])[-5:] 
-df.to_pickle('D:/CurrentClamp/all_stas_normed_input.pkl')
-
-# %% For saving all ephys features for clustering 
-
-feats = ['waveform',
-         'current_at_first_spike',
-         'ap_count',
-         'fr',
-         'inst_fr',
-         'time_to_first_spike',
-         'mean_isi',
-         'median_isi',
-         'max_isi',
-         'min_isi',
-         'first_thr', 
-         'mean_thr', 
-         'median_thr', 
-         'min_thr', 
-         'max_thr',
-         'mean_width',
-         'median_width',
-         'max_width',
-         'min_width',
-         'mean_amplitude',
-         'median_amplitude',
-         'min_amplitude',
-         'max_amplitude',
-         'tau',
-         'exp_name',
-         'cond',
-         'trialnr']
-
-data_1 = np.array(data)[:,0]
-data_2 = np.array(data)[:,1]
-
-df1 = pd.DataFrame(columns=feats)
-df2 = pd.DataFrame(columns=feats)
-
-for i in range(len(data_1)):
-    df1.loc[i,'waveform'] = np.array(data_1)[i][0]
-    df1.loc[i,feats[1:]]  = np.array(data_1)[i][1:]
-
-for i in range(len(data_2)):
-    df2.loc[i,'waveform'] = np.array(data_2)[i][0]
-    df2.loc[i,feats[1:]]  = np.array(data_2)[i][1:]
-
-df1.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_first_spks_calculated.pkl')
-df2.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_second_spks_calculated.pkl')
-
-#%%
-
-feats = ['waveform',
-         'current_at_first_spike',
-         'ap_count',
-         'fr',
-         'inst_fr',
-         'time_to_first_spike',
-         'mean_isi',
-         'median_isi',
-         'max_isi',
-         'min_isi',
-         'first_thr', 
-         'mean_thr', 
-         'median_thr', 
-         'min_thr', 
-         'max_thr',
-         'mean_width',
-         'median_width',
-         'max_width',
-         'min_width',
-         'mean_amplitude',
-         'median_amplitude',
-         'min_amplitude',
-         'max_amplitude',
-         'FI',
-         'tau',
-         'exp_name',
-         'cond',
-         'trialnr']
-df = pd.DataFrame(columns=feats)
-for i in range(len(data)):
-    df.loc[i,'waveform'] = np.array(data)[i][0]
-    df.loc[i,feats[1:]]  = np.array(data)[i][1:]
-
-df.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_spikes_calculated_5ms_with_MI.pkl')
-
-# df.to_pickle("D:/Data For Publication/FN_files_with_MI.pkl")
-#%%
-
-feats = ['mean_I',
-         'var_I',
-         'exp_name',
-         'trialnr',
-         'cond',]
-
-df = pd.DataFrame(columns=feats)
-for i in range(len(data)):
-    df.loc[i,'mean_I'] = np.array(data)[i][0]
-    df.loc[i,feats[1:]]  = np.array(data)[i][1:]
-df.to_pickle("D:/Data For Publication/I_data.pkl")
-
-#%% For saving essential features for significance test
-feats = ['tau',
-         'isi',
-         'thresholds',
-         'AP_widths',
-         'AP_peaks',
-         'MI',
-         'exp_name',
-         'cond',
-         'trialnr']
-
-df = pd.DataFrame(columns=feats)
-
-for i in range(len(data)):
-    df.loc[i,'tau'] = np.array(data[i][0])
-    df.loc[i,'isi'] = np.array(data[i][1])
-    df.loc[i,'thresholds'] = np.array(data[i][2])
-    df.loc[i,'AP_widths'] = np.array(data[i][3])
-    df.loc[i,'AP_peaks'] = np.array(data[i][4])
-    df.loc[i,'MI'] = np.array(data[i][5])
-    df.loc[i,'exp_name'] = np.array(data[i][6])
-    df.loc[i,'cond'] = np.array(data[i][7])
-    df.loc[i,'trialnr'] = np.array(data[i][8])
-df.to_pickle('D:/FN_analysed_feat_set/val_collection_all_exps_all_conds.pkl')
+    # data = test_single_exp("D:/Analyzed/",'NC_170821_aCSF_D1ago_E4',compute_spikes=True)
+    # imps = return_all_impedance("D:/Analyzed/")
+    # waves = return_all_waveforms_DB("D:/Analyzed/")
+    # stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
+    # stas = return_all_STA_h_db("D:/Analyzed/")
 
 
-#%%
-# feats = ['waveforms','cond','exp_name','trial']
-# # waves = np.vstack(waves)
-# df = pd.DataFrame(columns=feats)
-# # df['waveform'] = np.vstack(waves)[:,:-3]
-# # df[['cond','exp_name','trial']] =  np.vstack(waves)[:,:-3]
-# for i in range(len(waves)):
-#     print(i)
-#     df.loc[i,'waveforms'] = np.float32(np.array(waves)[i,:-3])
-#     df.loc[i,['cond','exp_name','trial']] = np.array(waves)[i,-3:]
-# df.to_pickle('D:/CurrentClamp/all_waveforms_entire.pkl')
+    # stas = return_all_STA_norm("D:/Analyzed/")
 
-# %%
-df.to_csv('D:/CurrentClamp/all_waveforms_entire.pkl')
+     
+    # Fr saving all STAs
+
+    # df = pd.DataFrame(columns=['sta','baseline','peak_distance','cond','exp_name','trial'])
+    # for i in range(len(stas)):
+    #     df.loc[i,'sta'] = np.array(np.hstack(stas[i])[:-3],dtype=np.float32)
+    #     df.loc[i,['baseline','peak_distance','cond','exp_name','trial']] = np.hstack(stas[i])[-5:] 
+    # df.to_pickle('D:/CurrentClamp/all_stas_normed_input.pkl')
 
 
-# %%
-data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170628_NC_33_FN_analyzed.mat")
-
-spks = data[0]['spikeindices']*(1/20)
-V = data[0]['membrane_potential']
-I = data[0]['input_current']
-sampling_rate = 1/20
-
-# spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
-# signal = neo.AnalogSignal(np.array([I]).T, units='pA',
-#                             sampling_rate=20/ms) 
-
-# sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0.01* ms))
 
 
-# plt.plot(sta_.magnitude)
-# for i in data[0]['spikeindices'][:10]:
-#     plt.plot(I[data[0]['spikeindices'][i]-100*20:data[0]['spikeindices'][i]])
 
 
-# %%
+
+    # For saving all ephys features for clustering 
+
+    feats = ['waveform',
+            'current_at_first_spike',
+            'ap_count',
+            'fr',
+            'inst_fr',
+            'time_to_first_spike',
+            'mean_isi',
+            'median_isi',
+            'max_isi',
+            'min_isi',
+            'first_thr', 
+            'mean_thr', 
+            'median_thr', 
+            'min_thr', 
+            'max_thr',
+            'mean_width',
+            'median_width',
+            'max_width',
+            'min_width',
+            'mean_amplitude',
+            'median_amplitude',
+            'min_amplitude',
+            'max_amplitude',
+            'tau',
+            'exp_name',
+            'cond',
+            'trialnr']
+
+    data_1 = np.array(data)[:,0]
+    data_2 = np.array(data)[:,1]
+
+    df1 = pd.DataFrame(columns=feats)
+    df2 = pd.DataFrame(columns=feats)
+
+    for i in range(len(data_1)):
+        df1.loc[i,'waveform'] = np.array(data_1)[i][0]
+        df1.loc[i,feats[1:]]  = np.array(data_1)[i][1:]
+
+    for i in range(len(data_2)):
+        df2.loc[i,'waveform'] = np.array(data_2)[i][0]
+        df2.loc[i,feats[1:]]  = np.array(data_2)[i][1:]
+
+    df1.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_first_spks_calculated.pkl')
+    df2.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_second_spks_calculated.pkl')
+
+    # For saving all ephys features for clustering without partitioning
+
+    feats = ['waveform',
+            'current_at_first_spike',
+            'ap_count',
+            'fr',
+            'inst_fr',
+            'time_to_first_spike',
+            'mean_isi',
+            'median_isi',
+            'max_isi',
+            'min_isi',
+            'first_thr', 
+            'mean_thr', 
+            'median_thr', 
+            'min_thr', 
+            'max_thr',
+            'mean_width',
+            'median_width',
+            'max_width',
+            'min_width',
+            'mean_amplitude',
+            'median_amplitude',
+            'min_amplitude',
+            'max_amplitude',
+            'FI',
+            'tau',
+            'exp_name',
+            'cond',
+            'trialnr']
+    df = pd.DataFrame(columns=feats)
+    for i in range(len(data)):
+        df.loc[i,'waveform'] = np.array(data)[i][0]
+        df.loc[i,feats[1:]]  = np.array(data)[i][1:]
+
+    df.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_spikes_calculated_5ms_with_MI.pkl')
+
+    # df.to_pickle("D:/Data For Publication/FN_files_with_MI.pkl")
+
+    # for saving input features for clustering
+    feats = ['mean_I',
+            'var_I',
+            'exp_name',
+            'trialnr',
+            'cond',]
+
+    df = pd.DataFrame(columns=feats)
+    for i in range(len(data)):
+        df.loc[i,'mean_I'] = np.array(data)[i][0]
+        df.loc[i,feats[1:]]  = np.array(data)[i][1:]
+    df.to_pickle("D:/Data For Publication/I_data.pkl")
+
+    # For saving essential features for significance test
+    feats = ['tau',
+            'isi',
+            'thresholds',
+            'AP_widths',
+            'AP_peaks',
+            'MI',
+            'exp_name',
+            'cond',
+            'trialnr']
+
+    df = pd.DataFrame(columns=feats)
+
+    for i in range(len(data)):
+        df.loc[i,'tau'] = np.array(data[i][0])
+        df.loc[i,'isi'] = np.array(data[i][1])
+        df.loc[i,'thresholds'] = np.array(data[i][2])
+        df.loc[i,'AP_widths'] = np.array(data[i][3])
+        df.loc[i,'AP_peaks'] = np.array(data[i][4])
+        df.loc[i,'MI'] = np.array(data[i][5])
+        df.loc[i,'exp_name'] = np.array(data[i][6])
+        df.loc[i,'cond'] = np.array(data[i][7])
+        df.loc[i,'trialnr'] = np.array(data[i][8])
+    df.to_pickle('D:/FN_analysed_feat_set/val_collection_all_exps_all_conds.pkl')
 
 
-feats = ['impedance','exp_name','trial','cond']
-imps_vals = imps[::4]
-exps = imps[1::4]
-trials = imps[2::4]
-conds = imps[3::4]
-df = pd.DataFrame(columns=feats)
 
-for i in range(len(imps_vals)):
-    print(i)
-    df.loc[i,'impedance'] = imps_vals[i]
-    df.loc[i,['exp_name','trial','cond']] = [exps[i],trials[i],conds[i]]
+    # For saving all waveforms for clustering
 
-df.to_pickle('D:/CurrentClamp/Impedance.pkl')
+    # feats = ['waveforms','cond','exp_name','trial']
+    # # waves = np.vstack(waves)
+    # df = pd.DataFrame(columns=feats)
+    # # df['waveform'] = np.vstack(waves)[:,:-3]
+    # # df[['cond','exp_name','trial']] =  np.vstack(waves)[:,:-3]
+    # for i in range(len(waves)):
+    #     print(i)
+    #     df.loc[i,'waveforms'] = np.float32(np.array(waves)[i,:-3])
+    #     df.loc[i,['cond','exp_name','trial']] = np.array(waves)[i,-3:]
+    # df.to_pickle('D:/CurrentClamp/all_waveforms_entire.pkl')
 
 
-# %%
+
+    # For testing STA code
+    data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170628_NC_33_FN_analyzed.mat")
+
+    spks = data[0]['spikeindices']*(1/20)
+    V = data[0]['membrane_potential']
+    I = data[0]['input_current']
+    sampling_rate = 1/20
+
+    # spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
+    # signal = neo.AnalogSignal(np.array([I]).T, units='pA',
+    #                             sampling_rate=20/ms) 
+
+    # sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0.01* ms))
+
+
+    # plt.plot(sta_.magnitude)
+    # for i in data[0]['spikeindices'][:10]:
+    #     plt.plot(I[data[0]['spikeindices'][i]-100*20:data[0]['spikeindices'][i]])
+
+
+
+
+    # For saving all impedance values for clustering
+    feats = ['impedance','exp_name','trial','cond']
+    imps_vals = imps[::4]
+    exps = imps[1::4]
+    trials = imps[2::4]
+    conds = imps[3::4]
+    df = pd.DataFrame(columns=feats)
+
+    for i in range(len(imps_vals)):
+        print(i)
+        df.loc[i,'impedance'] = imps_vals[i]
+        df.loc[i,['exp_name','trial','cond']] = [exps[i],trials[i],conds[i]]
+
+    df.to_pickle('D:/CurrentClamp/Impedance.pkl')
+
+
+

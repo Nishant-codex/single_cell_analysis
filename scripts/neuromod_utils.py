@@ -153,6 +153,12 @@ def return_peak_and_decay(df):
     return df
 
 def return_acsf_and_drug(df,cond,joint=False,remove_duplicates=True,sample=None):
+    ''' Returns the acsf and drug dataframes for a given drug condition. 
+    If joint is True, returns a single dataframe with both conditions. 
+    If remove_duplicates is True, removes duplicate experiments from both dataframes. 
+    If sample is not None, samples the given number of rows from both dataframes.   
+    
+    '''
     exps = list(set(df[df.cond.isin(cond)]['exp_name']))
     df_new = df[df.exp_name.isin(exps)]
     df_acsf = df_new[df_new.cond == 'acsf']
