@@ -146,9 +146,12 @@ def return_name_date_exp_fn(string):
     if 'NC' in string:
         f_name = string.split('_')
         date = f_name[1]
+        day = int(date[-2:])
+        month = int(date[-4:-2])
+        year = date[:2]
         name = f_name[0]
         exp = f_name[-2]
-
+        date = str(day)+str(month)+year
         return date+'_'+name+'_'+exp
     elif 'xuan' in string:
         broken_str = string.split('_')
@@ -157,12 +160,8 @@ def return_name_date_exp_fn(string):
         exp = broken_str[2]
         day = date[0]
         month = date[1]
-        if len(month) == 1:
-            month = '0'+month
         year = date[2]
-        if len(day) == 1:
-            day = '0'+day
-        date = year+month+day
+        date = day+month+year
         return date+'_'+name+'_'+exp
     elif 'asli' in string:
         broken_str = string.split('_')
@@ -170,12 +169,8 @@ def return_name_date_exp_fn(string):
         date = broken_str[1].split('-')
         day = date[0]
         month = date[1]
-        if len(month) == 1:
-            month = '0'+month
         year = date[2]
-        if len(day) == 1:
-            day = '0'+day
-        date = year+month+day
+        date = day+month+year
         exp = broken_str[2]
         return date+'_'+name+'_'+exp
     elif 'Payam' in string:
@@ -185,12 +180,8 @@ def return_name_date_exp_fn(string):
         exp = broken_str[2]
         day = date[0]
         month = date[1]
-        if len(month) == 1:
-            month = '0'+month
         year = date[2]
-        if len(day) == 1:
-            day = '0'+day
-        date = year+month+day
+        date = day+month+year
         return date+'_'+name+'_'+exp
 
 
