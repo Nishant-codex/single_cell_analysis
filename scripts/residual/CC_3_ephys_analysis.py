@@ -1,5 +1,5 @@
 
-from CC_analysis_utils import *
+from single_cell_analysis.src.single_cell_analysis.CC_analysis_utils import *
 
 
 

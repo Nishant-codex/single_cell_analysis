@@ -6,7 +6,7 @@ By Nishant Joshi
 '''
 
 import sys
-from utils import *
+from single_cell_analysis.src.single_cell_analysis.utils import *
 
 def separate_acsf_and_drug(data_list:list) -> list:
 	"""seperates and returns acsf trials from the drug trials in the cell object

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 import pandas as pd
 
-from utils import *
+from single_cell_analysis.src.single_cell_analysis.utils import *
 from scipy import signal
 from scipy.fft import fft, fftshift
 import matplotlib.pyplot as plt
