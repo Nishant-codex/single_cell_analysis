@@ -34,6 +34,17 @@ notebooks_acsf/        # Analysis under ACSF conditions
 notebooks_drug/        # Analysis under drug conditions
 residual_code/         # Exploratory / legacy notebooks and scripts
 │   └── Infomation_transfer/   # Cluster analysis, PCA, UMAP, stability checks
+scripts/         # Containing scripts for visualiztion and cluster stability
+src/         # Source code for extracting features and plotting utilities
+│   └── single_cell_analysis/   # Cluster analysis, PCA, UMAP, stability checks
+	│   └── CC_analysis_utils.py                                                          
+			CC_ephys_features.py                                                          
+			FN_ephys_features.py                                                          
+			neuromod_utils.py                                                             
+			plot_utils.py                                                                 
+			UMAP_utils.py                                                                 
+			utils.py                                                                      
+/
 LICENSE
 README.md              # Project description and usage
 ```
@@ -46,17 +57,12 @@ Clone the repository and install dependencies:
 ```bash
 git clone https://github.com/your-username/single_cell_analysis-clustering.git
 cd single_cell_analysis-clustering
-pip install -r requirements.txt
+python -m venv .venv
+# activate the environment
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
-
-Alternatively, create a conda environment:  
-
-```bash
-conda env create -f environment.yml
-conda activate singlecell
-```
-
----
 
 ## Usage
 To reproduce the analyses, open the Jupyter notebooks:  
