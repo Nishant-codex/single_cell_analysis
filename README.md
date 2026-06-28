@@ -1,5 +1,5 @@
-# Single-Cell Electrophysiology Analysis & Clustering
-![Diagram showing a research project workflow for single-cell electrophysiology analysis and clustering with annotated steps and tools](./analysis_tools.pdf)
+# Swiss-kinfe for Single-Cell Electrophysiology 
+![Diagram showing a research project workflow for single-cell electrophysiology analysis and clustering with annotated steps and tools](./swissknife.png)
 
 [![Paper DOI](https://img.shields.io/badge/Paper-DOI-blue)](https://doi.org/10.1371/journal.pcbi.1013821)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
