@@ -446,15 +446,6 @@ def collect_singlecell_spike_data(path_cc, filename ):
             return 'faulty'
 
 def return_name_date_exp_fn(string):
-    """ returns the name, date and experiment name from the string. The string should be in the format of 'name_date_exp' or 'name-date-exp' or 'name_date_exp_1' or 'name-date-exp-1'
-    Args:
-        string (str): the string to be processed
-    Returns:
-        str: the processed string in the format of 'name_date_exp'
-    """
-
-    
-    
     if 'NC' in string:
         string_broken = string.split('_')
         name = string_broken[0]
