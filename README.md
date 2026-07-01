@@ -1,4 +1,4 @@
-# Swiss-kinfe for Single-Cell Electrophysiology 
+# Swiss-knife for Single-Cell Electrophysiology 
 ![Diagram showing a research project workflow for single-cell electrophysiology analysis and clustering with annotated steps and tools](./swissknife.png)
 
 [![Paper DOI](https://img.shields.io/badge/Paper-DOI-blue)](https://doi.org/10.1371/journal.pcbi.1013821)
