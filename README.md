@@ -77,6 +77,27 @@ jupyter notebook notebooks_acsf/Clustering_attribute_sets.ipynb
 
 Figures and results generated from these notebooks correspond directly to the analyses presented in the paper.  
 
+### Feature extraction examples
+You can run the feature extraction scripts directly from the repository root with your own input and output paths.
+
+```bash
+python -m src.single_cell_analysis.feature_extraction.Action_potential --input /path/to/data --output /path/to/output
+```
+
+```bash
+python -m src.single_cell_analysis.feature_extraction.impedance --input /path/to/data --output /path/to/output
+```
+
+```bash
+python -m src.single_cell_analysis.feature_extraction.STA --input /path/to/data --output /path/to/output
+```
+
+```bash
+python -m src.single_cell_analysis.feature_extraction.cc_features --input /path/to/data --output /path/to/output --mode both
+```
+
+Use `--mode ephys`, `--mode waveform`, or `--mode both` with the CC extractor depending on which feature set you want to produce.
+
 ---
 
 ## Workflow

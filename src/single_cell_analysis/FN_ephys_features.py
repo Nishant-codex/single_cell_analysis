@@ -1094,34 +1094,7 @@ def return_all_input_data_with_just_files(path_to_analyzed_files,just_NC=False, 
 
     return all_ephys_data
 
-def return_all_impedance(path_to_analyzed_files):
-    files = os.listdir(path_to_analyzed_files)
-    all_ephys_data = []
-    for f in files:
-            # f = 'NC_170815_aCSF_D1ago_E3_analyzed.mat'
-            data = loadmatInPy(path_to_analyzed_files+f)
-            for trial, instance in enumerate(data):
-                # try:
-                    cond = instance['input_generation_settings']['condition'].lower()
-                    # trialnr = instance['input_generation_settings']['trialnr']
 
-                    exp =  f.split('.')[0]
-
-                    exp = return_name_date_exp_fn(exp)
-
-                    print(exp, trial, cond)
-                    ephys_obj = EphysSet(data=instance,cond=cond,exp_name=exp,trialnr=trial)
-                    imp,fas = ephys_obj.get_impedence(return_mean=False)
-
-                    # all_ephys_data.append(imp)
-                    # all_ephys_data.append(exp)
-                    # all_ephys_data.append(trial)
-                    # all_ephys_data.append(cond)
-                # except:
-                #         print('problem with ',f[:-13],' trial ',trial)
-            break
-
-    return fas
 
 def return_partitioned_data(data,partitions):
     input_settings = data['input_generation_settings']
@@ -1631,20 +1604,6 @@ if __name__ == "__main__":
 
 
 
-    # For saving all impedance values for clustering
-    feats = ['impedance','exp_name','trial','cond']
-    imps_vals = imps[::4]
-    exps = imps[1::4]
-    trials = imps[2::4]
-    conds = imps[3::4]
-    df = pd.DataFrame(columns=feats)
-
-    for i in range(len(imps_vals)):
-        print(i)
-        df.loc[i,'impedance'] = imps_vals[i]
-        df.loc[i,['exp_name','trial','cond']] = [exps[i],trials[i],conds[i]]
-
-    df.to_pickle('D:/CurrentClamp/Impedance.pkl')
 
 
 
