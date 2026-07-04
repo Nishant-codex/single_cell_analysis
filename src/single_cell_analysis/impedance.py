@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 import pandas as pd
 
-from single_cell_analysis.src.single_cell_analysis.utils import *
+from single_cell_analysis.utils import *
 from scipy import signal
 from scipy.fft import fft, fftshift
 import matplotlib.pyplot as plt
@@ -45,7 +45,7 @@ def makespectrumt(trace, timelen, adcrate):
     return pwr, fas
 
 
-def overdracht_wytse(par1, spoordac, spooradc, dacrate, adcrate, par2=None):
+def calculate_impedance(par1, spoordac, spooradc, dacrate, adcrate, par2=None):
 
     time = par1
     if par2 is None:
@@ -147,7 +147,7 @@ def get_impedence(data):
     I_acsf = data['input_current']
     V_acsf = data['membrane_potential']
     spk_acsf, V_acsf, I_acsf = return_stiched_spike_train(data)
-    imp,fas = overdracht_wytse(0.01, I_acsf, V_acsf, 20001, 20001, 1)
+    imp,fas = calculate_impedance(0.01, I_acsf, V_acsf, 20001, 20001, 1)
     return imp,fas
 
 
@@ -198,7 +198,7 @@ def plot_imp_condition(cond, exp_name=None, remove_spikes=True, plot=False, path
                     if remove_spikes:
                         spk_acsf, V_acsf, I_acsf = return_stiched_spike_train(
                             i)
-                    Imp_acsf = overdracht_wytse(
+                    Imp_acsf = calculate_impedance(
                         0.01, I_acsf, V_acsf, 20001, 20001, 1)
                     imp_inh_acsf.append(Imp_acsf)
 
@@ -210,7 +210,7 @@ def plot_imp_condition(cond, exp_name=None, remove_spikes=True, plot=False, path
             if remove_spikes:
                 spk, V_inh, I_inh = return_stiched_spike_train(data)
 
-            Imp = overdracht_wytse(0.01, I_inh, V_inh, 20001, 20001, 1)
+            Imp = calculate_impedance(0.01, I_inh, V_inh, 20001, 20001, 1)
             imp_inh.append(Imp)
             if plot:
                 fig, ax = plt.subplots(1, 2, figsize=[12, 6])
@@ -249,7 +249,7 @@ def plot_imp_condition(cond, exp_name=None, remove_spikes=True, plot=False, path
                     if remove_spikes:
                         spk_acsf, V_acsf, I_acsf = return_stiched_spike_train(
                             i)
-                    Imp_acsf = overdracht_wytse(
+                    Imp_acsf = calculate_impedance(
                         0.01, I_acsf, V_acsf, 20001, 20001, 1)
                     imp_exc_acsf.append(Imp_acsf)
 
@@ -259,7 +259,7 @@ def plot_imp_condition(cond, exp_name=None, remove_spikes=True, plot=False, path
             V_exc = data['membrane_potential']
             if remove_spikes:
                 spk, V_exc, I_exc = return_stiched_spike_train(data)
-            Imp = overdracht_wytse(0.01, I_exc, V_exc, 20001, 20001, 1)
+            Imp = calculate_impedance(0.01, I_exc, V_exc, 20001, 20001, 1)
             imp_exc.append(Imp)
             if plot:
                 fig, ax = plt.subplots(1, 2, figsize=[12, 6])

@@ -18,7 +18,7 @@ from sklearn.linear_model import LinearRegression
 import neo
 from quantities import *
 from elephant import sta
-
+from single_cell_analysis import *
 
 
 #%%
@@ -26,6 +26,7 @@ from elephant import sta
 class EphysSet:
     
     def __init__(self,data,cond,exp_name,trialnr):
+        """Initialize an electrophysiology dataset wrapper for one recording."""
 
         self.data = data
         self.cond = cond
@@ -35,27 +36,13 @@ class EphysSet:
         self.dt = 1/20 
 
     def remove_nan(self,data):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Remove NaN values from an array-like input."""
         ind = ~np.isnan(data)
         data_ = data[ind]
         return data_
 
     def rolling_avg(self,data):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Compute a simple rolling mean over the input data."""
         start = 0
         length = len(data)//10
         end = len(data)
@@ -76,14 +63,7 @@ class EphysSet:
             return avg
 
     def get_Vm(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return membrane-voltage windows around each threshold crossing."""
         Vm = []
         V = self.data['membrane_potential']
         thr = self.data['thresholds']
@@ -102,14 +82,7 @@ class EphysSet:
             return Vm
     
     def get_dvdt(self,data,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the mean positive and negative voltage slopes for each trace."""
         dvdt_p = []
         dvdt_n = []
 
@@ -128,14 +101,7 @@ class EphysSet:
             return dvdt_p, dvdt_n
     
     def sub_threshold_resistance(self):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Estimate the sub-threshold resistance from the voltage-current relation."""
         spikes = self.remove_nan(self.data['thresholdindices'])
 
         V = self.data['membrane_potential'][:int(spikes[0])-100]
@@ -149,14 +115,7 @@ class EphysSet:
         return R
 
     def get_thresholds(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the spike threshold values for the recording."""
         ind = ~np.isnan(self.data['thresholds'])
         if return_mean:
             return np.mean(self.data['thresholds'][ind])
@@ -164,14 +123,7 @@ class EphysSet:
             return self.data['thresholds'][ind]
         
     def get_isi(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return inter-spike intervals for the detected spikes."""
         ind = ~np.isnan(self.data['thresholds'])
         if return_mean:
             return np.mean(np.diff(self.data['spikeindices'][ind])*dt)
@@ -179,14 +131,7 @@ class EphysSet:
             return np.diff(self.data['spikeindices'][ind])*dt
         
     def get_threshold_adaptation(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return threshold adaptation across successive spikes."""
         ind = ~np.isnan(self.data['thresholds'])
         if return_mean:
             return np.mean(np.diff(self.data['thresholds'][ind]))
@@ -194,14 +139,7 @@ class EphysSet:
             return np.diff(self.data['thresholds'][ind])
 
     def get_AP_peak(self,spike_waves,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the peak voltage of each action-potential waveform."""
         max_v = []
         for i in spike_waves:
             max_v.append(np.max(i))
@@ -211,14 +149,7 @@ class EphysSet:
             return max_v
 
     def get_AP_peak_adaptation(self,spike_waves,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the adaptation of action-potential peak amplitudes."""
         max_v = []
         for i in spike_waves:
             max_v.append(np.max(i))
@@ -228,14 +159,7 @@ class EphysSet:
             return np.diff(max_v)
 
     def get_AP_width(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return action-potential widths measured at half-height."""
         thr_ind = self.data['thresholdindices']
         thr = self.data['thresholds']
         ind = ~np.isnan(thr_ind)
@@ -264,36 +188,15 @@ class EphysSet:
             return width
 
     def hyperpolarized_value(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the minimum membrane potential in the recording."""
         return np.min(self.data['membrane_potential'])
 
     def first_spike(self):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the index of the first detected spike threshold."""
         return self.data['thresholdindices'][0]
 
     def get_up_down_ratio(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the ratio between up- and down-state analysis values."""
         if len(self.data['Analysis']) > 1 and type(self.data['Analysis']) == list:
             avg_up = []
             avg_down = []
@@ -306,16 +209,7 @@ class EphysSet:
         return np.nanmean(np.array(avg_up)/np.array(avg_down))
 
     def subthreshold(self, subthreshold=False, plot=False,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-            subthreshold (bool, optional): _description_. Defaults to False.
-            plot (bool, optional): _description_. Defaults to False.
-
-        Returns:
-            _type_: _description_
-        """
+        """Interpolate the trace around spikes to reduce spike artifacts."""
         V = self.data['membrane_potential']
         I = self.data['input_current']
         spikes = self.data['spikeindices']
@@ -355,14 +249,7 @@ class EphysSet:
             return V_
         
     def isi_adaptation_index(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the adaptation index based on successive inter-spike intervals."""
         ind = ~np.isnan(self.data['thresholds'])
         ISI = np.diff(self.data['spikeindices'][ind])
         len_isi = len(ISI)
@@ -380,14 +267,7 @@ class EphysSet:
             return factors
 
     def threshold_adaptation_index(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the threshold adaptation index across spikes."""
         ind = ~np.isnan(self.data['thresholds'])
         thr = np.diff(self.data['thresholds'][ind])
         len_thr = len(thr)
@@ -405,14 +285,7 @@ class EphysSet:
             return factors
 
     def psth(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the peri-stimulus spike count summary for the trace."""
         V_zero = np.zeros_like(self.data['membrane_potential'])
         thr = self.data['thresholdindices']
         ind = ~np.isnan(thr)
@@ -436,48 +309,28 @@ class EphysSet:
             return count_spk
 
     def get_inst_fr(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the instantaneous firing rate from spike intervals."""
         if return_mean:        
             return np.mean(1/(np.diff(self.data['spikeindices'])))
         else:
             return 1/(np.diff(self.data['spikeindices']))
 
     def get_MI(self,return_mean=True):
+        """Return the mutual information (FI) value for the analyzed trace."""
         if type(self.data['Analysis']) == list:
             return np.mean([i['FI'] for i in self.data['Analysis']])
         else:
             return self.data['Analysis']['FI']
     
     def get_firing_rate(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the firing-rate values from the recording metadata."""
         if return_mean:        
             return np.mean(self.data['firing_rate'])
         else:
             return self.data['firing_rate']
 
     def spike_frequency_adaptation(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the adaptation of spike counts across time bins."""
         V_zero = np.zeros_like(self.data['membrane_potential'])
         thr = self.data['thresholdindices']
         ind = ~np.isnan(thr)
@@ -502,14 +355,7 @@ class EphysSet:
             return np.diff(count_spk)
 
     def get_impedence(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (list): _description_
-
-        Returns:
-            float: _description_
-        """
+        """Return the impedance estimate for the recording."""
         I_acsf = self.data['input_current']
         V_acsf = self.data['membrane_potential']
         spk_acsf, V_acsf, I_acsf = return_stiched_spike_train(self.data)
@@ -520,14 +366,7 @@ class EphysSet:
             return imp,fas
     
     def get_ephys_vals(self):
-        """_summary_
-
-        Args:
-            data_i (dict): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the derived electrophysiological feature vector for the recording."""
 
         Vm_avg, Vm, avg_V = self.get_Vm()
         dvdt_p, dvdt_n = self.get_dvdt(Vm)
@@ -583,6 +422,7 @@ class EphysSet:
 class EphysSet_niccolo:
 
     def __init__(self,data,cond,exp_name,trialnr,run_half=False,compute_spikes=False):
+        """Initialize a wrapper for a Niccolo-style electrophysiology recording."""
 
         self.data = data
         self.cond = cond.lower()
@@ -620,27 +460,13 @@ class EphysSet_niccolo:
         self.dt = 1/20 
 
     def remove_nan(self,data):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Remove NaN values from an array-like input."""
         ind = ~np.isnan(data)
         data_ = data[ind]
         return data_
     
     def get_Vm(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return membrane-voltage windows around each detected spike."""
         if self.compute_spikes:
             if return_mean:
                 # plt.plot(self.waveforms.T)
@@ -668,6 +494,7 @@ class EphysSet_niccolo:
                 return Vm
         
     def compute_thresholds(self,waveforms):
+        """Estimate spike thresholds from the provided waveforms."""
         threshold_inds = []
         thresholds = [] 
 
@@ -691,6 +518,7 @@ class EphysSet_niccolo:
         self.spikeindices = self.spikeindices[~self.bool_inds]
 
     def compute_spikes_and_thresholds(self):
+        """Detect spikes and estimate their thresholds from the membrane potential."""
         V = self.V
         self.spikeindices =  find_peaks(V,height=30,distance=4*20)[0]
         waveforms = []
@@ -701,14 +529,7 @@ class EphysSet_niccolo:
         self.waveforms = np.array(waveforms)[~self.bool_inds]
 
     def rolling_avg(self,data):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Compute a simple rolling mean over the input data."""
         start = 0
         length = len(data)//10
         end = len(data)
@@ -729,6 +550,7 @@ class EphysSet_niccolo:
             return avg
 
     def return_quant_divided_by_time(self,divisions,quant):
+        """Split a quantity by time windows and return the per-window values."""
         total_duration = len(self.V)/20
         quantity = quant
         time_ranges = np.arange(0,total_duration+1,total_duration//divisions)
@@ -743,6 +565,7 @@ class EphysSet_niccolo:
         return vals_divided_by_time  
 
     def fano_factor(self,divisions):
+        """Return the Fano factor of spike counts across time bins."""
         total_duration = len(self.V)/20
         time_ranges = np.arange(0,total_duration+1,total_duration//divisions)
         spike_times = self.spikeindices/20
@@ -752,9 +575,11 @@ class EphysSet_niccolo:
         return np.var(spike_counts)/np.mean(spike_counts)  
 
     def cv(self,data):
+        """Return the coefficient of variation for the provided data."""
         return np.std(data)/np.mean(data)
     
     def get_MI(self,return_mean=True):
+        """Return the mutual information metric associated with the analyzed trace."""
         if type(self.data['Analysis']) == list:
             return np.mean([i['FI'] for i in self.data['Analysis']])
         else:
@@ -762,19 +587,12 @@ class EphysSet_niccolo:
         
     #values
     def get_current_at_first_spike(self):
-
+        """Return the input current value at the first detected spike."""
         firstspike_ind = self.spikeindices[0]
         return self.I[firstspike_ind]
     
     def get_ap_count(self):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the total number of detected action potentials in the trace."""
 
         thr = self.thresholds
         thr_ind = self.thresholdindices
@@ -786,53 +604,25 @@ class EphysSet_niccolo:
         return len(spikes)
         
     def get_firing_rate(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the firing-rate values from the recording metadata."""
         if return_mean:        
             return np.mean(self.data['firing_rate'])
         else:
             return self.data['firing_rate']
 
     def get_inst_fr(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the instantaneous firing rate from spike intervals."""
         if return_mean:        
             return np.mean(1/(np.diff(self.spikeindices*self.dt)))
         else:
             return 1/(np.diff(self.spikeindices))
 
     def get_time_to_first_spike(self):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the time elapsed to the first detected spike."""
         return self.thresholdindices[0]*self.dt
 
     def get_isi(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return inter-spike intervals for the detected spikes."""
         ind = ~np.isnan(self.thresholds)
         isi =np.diff(self.spikeindices[ind]*self.dt)
         if return_mean:
@@ -844,14 +634,7 @@ class EphysSet_niccolo:
             return np.diff(self.spikeindices[ind])*self.dt
 
     def get_thresholds(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return spike threshold statistics for the recording."""
         ind = ~np.isnan(self.thresholds)
         if return_mean:
             return self.thresholds[ind][0], np.mean(self.thresholds[ind]),np.median(self.thresholds[ind]),np.min(self.thresholds[ind]),np.max(self.thresholds[ind])
@@ -859,14 +642,7 @@ class EphysSet_niccolo:
             return self.thresholds[ind]
               
     def get_AP_width(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return action-potential widths measured at half-height."""
         thr_ind = self.thresholdindices
         thr = self.thresholds
         ind = ~np.isnan(thr_ind)
@@ -897,14 +673,7 @@ class EphysSet_niccolo:
             return width  
 
     def get_AP_peak(self,return_mean=True):
-        """_summary_
-
-        Args:
-            data (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the peak voltage of each action-potential waveform."""
         max_v = []
         thr_ind = self.thresholdindices
         thr = self.thresholds
@@ -926,14 +695,7 @@ class EphysSet_niccolo:
             return max_v
 
     def get_ephys_vals(self):
-        """_summary_
-
-        Args:
-            data_i (dict): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Return the derived electrophysiological feature vector for the recording."""
         waveform,average_waveform,average_v = self.get_Vm(return_mean=True)
         # average_waveform = np.mean(waveform,axis=0)
         current_at_first_spike= self.get_current_at_first_spike()
@@ -978,6 +740,7 @@ class EphysSet_niccolo:
         return ephys_data
 
     def get_ephys_vals_for_comparison(self):
+        """Return spike timing and threshold features for comparison analyses."""
 
         tau = self.tau
         isi = self.get_isi(return_mean=False)
@@ -997,18 +760,18 @@ class EphysSet_niccolo:
         return ephys_data
 
     def get_sta(self):        
-
-            sampling_rate = 1/20
-            spks = self.spikeindices*(sampling_rate)
-            V = self.V
-            # I = (self.I-self.data['input_generation_settings']['baseline'])/self.data['input_generation_settings']['amplitude_scaling']
-            I = self.I - np.mean(self.I) #(self.I - np.mean(self.I))/np.std(self.I)
-            spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
-            signal = neo.AnalogSignal(np.array([I]).T, units='pA',sampling_rate=20/ms) 
-            sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0 * ms))
-            return sta_.magnitude   
+        """Compute the spike-triggered average of the input current."""
+        sampling_rate = 1/20
+        spks = self.spikeindices*(sampling_rate)
+        V = self.V
+        I = self.I - np.mean(self.I)
+        spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
+        signal = neo.AnalogSignal(np.array([I]).T, units='pA', sampling_rate=20/ms)
+        sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0 * ms))
+        return sta_.magnitude
     
     def get_sta_h(self):        
+        """Compute the spike-triggered average of the hidden-state signal."""
 
         sampling_rate = 1/20
         spks = self.spikeindices*(sampling_rate)
@@ -1022,6 +785,7 @@ class EphysSet_niccolo:
         return sta_.magnitude   
 
 def test_single_exp(path_files, exp_name,compute_spikes=False):
+    """Load a single analyzed experiment and return the extracted ephys features."""
 
     all_ephys_with_cond = {}
     all_ephys_data = []
@@ -1039,6 +803,7 @@ def test_single_exp(path_files, exp_name,compute_spikes=False):
     return all_ephys_data  
 
 def return_all_ephys_dict_with_just_files(path_to_analyzed_files,just_NC=False, compute_spikes=False):
+    """Iterate over analyzed MAT files and return ephys features for every trial."""
     files = os.listdir(path_to_analyzed_files)
     all_ephys_data = []
     for f in files:
@@ -1065,6 +830,7 @@ def return_all_ephys_dict_with_just_files(path_to_analyzed_files,just_NC=False, 
     return all_ephys_data
 
 def return_all_input_data_with_just_files(path_to_analyzed_files,just_NC=False, compute_spikes=False):
+    """Collect basic summaries of the input current from analyzed MAT files."""
     files = os.listdir(path_to_analyzed_files)
     all_ephys_data = []
     for f in files:
@@ -1094,9 +860,8 @@ def return_all_input_data_with_just_files(path_to_analyzed_files,just_NC=False, 
 
     return all_ephys_data
 
-
-
 def return_partitioned_data(data,partitions):
+    """Split a recording into temporal partitions while preserving spike metadata."""
     input_settings = data['input_generation_settings']
     total_length = len(data['membrane_potential'])
     V = data['membrane_potential']
@@ -1132,7 +897,8 @@ def return_partitioned_data(data,partitions):
 
     return data_partitions
 
-def return_all_ephys_dict_with_just_files_partitioned(path_to_analyzed_files,partitions,compute_spikes):
+def return_ephys_with_partition(path_to_analyzed_files,partitions,compute_spikes):
+    """Split each recording into partitions and return ephys features for each partition."""
     files = os.listdir(path_to_analyzed_files)
     all_ephys_data = []
     for f in files:
@@ -1267,21 +1033,7 @@ def return_all_waveforms_DB(path):
     return waves_all
 
 def return_all_STA_db(path,compute_spikes=False):
-    """returns a dictonary with all the ephys properties for each cell for the 
-    condition provided along with the aCSF counterpart. 
-    Exc and inhibitory cells are segregated.
-    
-    Args:
-        cond (list): a list containing the condion to be analyzed
-        experimenter (str, optional): if a specific experimenter needs to aanlyzed seperately. Defaults to None.
-
-    Raises:
-        ValueError:  'condition should be a list even if a single value is provided'
-
-    Returns:
-        dict: dictionary containing all e-phys features for each cell  
-    """
-
+    """Compute and return spike-triggered averages for all analyzed recordings."""
     sta_all  = [] 
     files = os.listdir(path)
     for f in files:
@@ -1305,6 +1057,7 @@ def return_all_STA_db(path,compute_spikes=False):
     return sta_all
 
 def return_all_STA_norm(path):
+    """Return normalized STA values stored in the analyzed recordings."""
     sta_all  = [] 
     files = os.listdir(path)
     for f in files:
@@ -1332,21 +1085,7 @@ def return_all_STA_norm(path):
     return sta_all
 
 def return_all_STA_h_db(path):
-    """returns a dictonary with all the ephys properties for each cell for the 
-    condition provided along with the aCSF counterpart. 
-    Exc and inhibitory cells are segregated.
-    
-    Args:
-        cond (list): a list containing the condion to be analyzed
-        experimenter (str, optional): if a specific experimenter needs to aanlyzed seperately. Defaults to None.
-
-    Raises:
-        ValueError:  'condition should be a list even if a single value is provided'
-
-    Returns:
-        dict: dictionary containing all e-phys features for each cell  
-    """
-
+    """Compute and return spike-triggered averages for hidden-state traces."""
     sta_all  = [] 
     files = os.listdir(path)[1:]
     for f in files:
@@ -1370,6 +1109,7 @@ def return_all_STA_h_db(path):
     return sta_all
 
 def run_and_save(func,savepath,save=True,**args):
+    """Run a feature-extraction helper and optionally save the output as pickle files."""
     
     feats = ['waveform',
          'current_at_first_spike',
@@ -1437,170 +1177,6 @@ def run_and_save(func,savepath,save=True,**args):
             df.to_pickle(savepath+'Ephys_collection_all_exps_all_conds.pkl')
         else:
             return df1,df2       
-
-
-if __name__ == "__main__":
-
-    # data = loadmatInPy("G:/My Drive/Analyzed/xuan_29-3-19_E1_analyzed.mat")
-
-    # data = return_all_ephys_dict_with_just_files("D:/Analyzed/",compute_spikes=True)
-    # data = return_all_ephys_dict_with_just_files_partitioned("D:/Analyzed/",2,compute_spikes=True)
-
-    data = return_all_input_data_with_just_files("D:/Analyzed/",just_NC=False,compute_spikes=True)
-
-
-    # "D:\Analyzed\NC_170821_aCSF_D1ago_E4_analyzed.mat"
-
-
-    # data = test_single_exp("D:/Analyzed/",'NC_170821_aCSF_D1ago_E4',compute_spikes=True)
-    # imps = return_all_impedance("D:/Analyzed/")
-    # waves = return_all_waveforms_DB("D:/Analyzed/")
-    # stas = return_all_STA_db("D:/Analyzed/",compute_spikes=True)
-    # stas = return_all_STA_h_db("D:/Analyzed/")
-
-
-    # stas = return_all_STA_norm("D:/Analyzed/")
-
-     
-    # Fr saving all STAs
-
-    # df = pd.DataFrame(columns=['sta','baseline','peak_distance','cond','exp_name','trial'])
-    # for i in range(len(stas)):
-    #     df.loc[i,'sta'] = np.array(np.hstack(stas[i])[:-3],dtype=np.float32)
-    #     df.loc[i,['baseline','peak_distance','cond','exp_name','trial']] = np.hstack(stas[i])[-5:] 
-    # df.to_pickle('D:/CurrentClamp/all_stas_normed_input.pkl')
-
-
-
-
-
-
-
-    # For saving all ephys features for clustering 
-
-    feats = ['waveform',
-            'current_at_first_spike',
-            'ap_count',
-            'fr',
-            'inst_fr',
-            'time_to_first_spike',
-            'mean_isi',
-            'median_isi',
-            'max_isi',
-            'min_isi',
-            'first_thr', 
-            'mean_thr', 
-            'median_thr', 
-            'min_thr', 
-            'max_thr',
-            'mean_width',
-            'median_width',
-            'max_width',
-            'min_width',
-            'mean_amplitude',
-            'median_amplitude',
-            'min_amplitude',
-            'max_amplitude',
-            'tau',
-            'exp_name',
-            'cond',
-            'trialnr']
-
-    data_1 = np.array(data)[:,0]
-    data_2 = np.array(data)[:,1]
-
-    df1 = pd.DataFrame(columns=feats)
-    df2 = pd.DataFrame(columns=feats)
-
-    for i in range(len(data_1)):
-        df1.loc[i,'waveform'] = np.array(data_1)[i][0]
-        df1.loc[i,feats[1:]]  = np.array(data_1)[i][1:]
-
-    for i in range(len(data_2)):
-        df2.loc[i,'waveform'] = np.array(data_2)[i][0]
-        df2.loc[i,feats[1:]]  = np.array(data_2)[i][1:]
-
-    df1.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_first_spks_calculated.pkl')
-    df2.to_pickle('D:/FN_analysed_feat_set/Ephys_collection_all_exps_all_conds_second_spks_calculated.pkl')
-
-    # For saving all ephys features for clustering without partitioning
-
-    # df.to_pickle("D:/Data For Publication/FN_files_with_MI.pkl")
-
-    # for saving input features for clustering
-    feats = ['mean_I',
-            'var_I',
-            'exp_name',
-            'trialnr',
-            'cond',]
-
-    df = pd.DataFrame(columns=feats)
-    for i in range(len(data)):
-        df.loc[i,'mean_I'] = np.array(data)[i][0]
-        df.loc[i,feats[1:]]  = np.array(data)[i][1:]
-    df.to_pickle("D:/Data For Publication/I_data.pkl")
-
-    # For saving essential features for significance test
-    feats = ['tau',
-            'isi',
-            'thresholds',
-            'AP_widths',
-            'AP_peaks',
-            'MI',
-            'exp_name',
-            'cond',
-            'trialnr']
-
-    df = pd.DataFrame(columns=feats)
-
-    for i in range(len(data)):
-        df.loc[i,'tau'] = np.array(data[i][0])
-        df.loc[i,'isi'] = np.array(data[i][1])
-        df.loc[i,'thresholds'] = np.array(data[i][2])
-        df.loc[i,'AP_widths'] = np.array(data[i][3])
-        df.loc[i,'AP_peaks'] = np.array(data[i][4])
-        df.loc[i,'MI'] = np.array(data[i][5])
-        df.loc[i,'exp_name'] = np.array(data[i][6])
-        df.loc[i,'cond'] = np.array(data[i][7])
-        df.loc[i,'trialnr'] = np.array(data[i][8])
-    df.to_pickle('D:/FN_analysed_feat_set/val_collection_all_exps_all_conds.pkl')
-
-
-
-    # For saving all waveforms for clustering
-
-    # feats = ['waveforms','cond','exp_name','trial']
-    # # waves = np.vstack(waves)
-    # df = pd.DataFrame(columns=feats)
-    # # df['waveform'] = np.vstack(waves)[:,:-3]
-    # # df[['cond','exp_name','trial']] =  np.vstack(waves)[:,:-3]
-    # for i in range(len(waves)):
-    #     print(i)
-    #     df.loc[i,'waveforms'] = np.float32(np.array(waves)[i,:-3])
-    #     df.loc[i,['cond','exp_name','trial']] = np.array(waves)[i,-3:]
-    # df.to_pickle('D:/CurrentClamp/all_waveforms_entire.pkl')
-
-
-
-    # For testing STA code
-    data = loadmatInPy("D:/CurrentClamp/FN_analyzed/170628_NC_33_FN_analyzed.mat")
-
-    spks = data[0]['spikeindices']*(1/20)
-    V = data[0]['membrane_potential']
-    I = data[0]['input_current']
-    sampling_rate = 1/20
-
-    # spiketrain = neo.SpikeTrain(spks, t_stop=len(V)*(sampling_rate), units='ms')
-    # signal = neo.AnalogSignal(np.array([I]).T, units='pA',
-    #                             sampling_rate=20/ms) 
-
-    # sta_ = sta.spike_triggered_average(signal, spiketrain, (-100 * ms, 0.01* ms))
-
-
-    # plt.plot(sta_.magnitude)
-    # for i in data[0]['spikeindices'][:10]:
-    #     plt.plot(I[data[0]['spikeindices'][i]-100*20:data[0]['spikeindices'][i]])
-
 
 
 
