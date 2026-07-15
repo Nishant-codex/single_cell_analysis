@@ -4,7 +4,8 @@ import argparse
 import numpy as np
 import pandas as pd
 import os   
-from single_cell_analysis.feature_extraction.partitioned_AP import return_ephys_with_partition
+from single_cell_analysis.FN_ephys_features import return_ephys_with_partition
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Extract action potential features from ephys data.')
     parser.add_argument('--input', dest='input_path', required=True, help='location of the input data')
