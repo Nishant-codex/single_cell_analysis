@@ -3,6 +3,7 @@
 
 [![Paper DOI](https://img.shields.io/badge/Paper-DOI-blue)](https://doi.org/10.1371/journal.pcbi.1013821)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Data DOI](https://img.shields.io/badge/Data-DOI-red)](https://doi.org/10.5281/zenodo.17625155)
 
 This repository contains the analysis code, Jupyter notebooks, and extracted feature files accompanying the following publications:  
 
