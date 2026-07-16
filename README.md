@@ -12,7 +12,8 @@ Neuromodulatory Control of Cortical Function: Cell-Type Specific Regulation of N
 Nishant Joshi, Xuan Yan, Niccolo Calcini, Payam Safavi, Asli Ak, Koen Kole, Sven van der Burg, Tansu Celikel, Fleur Zeldenrust
 bioRxiv 2026.03.13.711516; doi: https://doi.org/10.64898/2026.03.13.711516
 
-Extracted Features
+Extracted Features  
+
 Joshi, N., Zeldenrust, F.& Celikel, T. (2025). Data files for: Neuronal Identity is not static: an input-driven perspective [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.17625155
 
 ---
