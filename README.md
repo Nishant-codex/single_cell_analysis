@@ -3,6 +3,7 @@
 
 [![Paper DOI](https://img.shields.io/badge/Paper-DOI-blue)](https://doi.org/10.1371/journal.pcbi.1013821)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Data DOI](https://img.shields.io/badge/Data-DOI-red)](https://doi.org/10.5281/zenodo.17625155)
 
 This repository contains the analysis code, Jupyter notebooks, and extracted feature files accompanying the following publications:  
 
@@ -11,6 +12,10 @@ Joshi N, van Der Burg S, Celikel T, Zeldenrust F (2025) Neuronal identity is not
 Neuromodulatory Control of Cortical Function: Cell-Type Specific Regulation of Neuronal Information Transfer
 Nishant Joshi, Xuan Yan, Niccolo Calcini, Payam Safavi, Asli Ak, Koen Kole, Sven van der Burg, Tansu Celikel, Fleur Zeldenrust
 bioRxiv 2026.03.13.711516; doi: https://doi.org/10.64898/2026.03.13.711516
+
+Extracted Features  
+
+Joshi, N., Zeldenrust, F.& Celikel, T. (2025). Data files for: Neuronal Identity is not static: an input-driven perspective [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.17625155
 
 ---
 
