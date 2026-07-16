@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import pickle as pkl 
 from scipy.signal import find_peaks
 import sys
-sys.path.append('C:/Users/Nishant Joshi/Downloads/Old_code/repo/single_cell_analysis/scripts')
 
 from single_cell_analysis.utils import *
 from single_cell_analysis.CC_analysis_utils import * 
@@ -24,6 +23,27 @@ df_acsf = all_cc[all_cc.drug==False]
 
 
 class Ephys_CC:
+    '''Ephys_CC is a class that extracts electrophysiological features from current clamp data.
+    Parameters:
+    --------------
+    VI_data: the voltage and current data
+    spikedata: the spike data
+    
+    Methods:
+    --------------  
+    get_current_at_first_spike: returns the current at the first spike
+    get_AP_count: returns the number of action potentials in the last trial
+    fi_curve: plots the firing rate against the input current
+    get_abs_firing_rate: returns the absolute firing rate in Hz
+    get_inst_firing_rate: returns the instantaneous firing rate in Hz
+    get_time_to_first_spike: returns the time to the first spike in ms
+    get_isi_stats: returns statistics about the inter-spike intervals
+    get_threshold_stats: returns statistics about the threshold values
+    get_halfwidth_stats: returns statistics about the half-width values
+    get_amplitude_stats: returns statistics about the amplitude values
+    get_all_ephys_vals: returns all the ephys values as a list
+    
+    '''
     def __init__(self,VI_data,spikedata):
         self.V_I_data = VI_data
         self.spikedata = spikedata
@@ -32,6 +52,14 @@ class Ephys_CC:
  
          
     def get_current_at_first_spike(self):
+        '''get_current_at_first_spike returns the current at the first spike.
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        I_s[0]: the current at the first spike
+        '''
         spike_inds = []
         # for trial in self.spikedata:
         spike_ind = 0
@@ -50,12 +78,28 @@ class Ephys_CC:
         return I_s[0]
 
     def get_AP_count(self):
+        '''get_AP_count returns the number of action potentials in the last trial.
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        spike_inds: the number of action potentials in the last trial
+        '''
         spike_inds = []
         # for trial in self.spikedata:
         spike_inds  = len(self.spikedata[-1]['spks'])
         return spike_inds
 
     def fi_curve(self):
+        '''fi_curve plots the firing rate against the input current.
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        Is: the input currents
+        '''
         time = self.offset-self.onset
         frs =[1000*(len(self.spikedata[i]['spks'])/(time/20)) for i in range(len(self.spikedata))]
         Is = [100*(np.mean(self.V_I_data['I'][i][self.onset:self.offset])/1e-10) for i in range(len(self.V_I_data['I']))]
@@ -67,12 +111,28 @@ class Ephys_CC:
         return Is
     
     def get_abs_firing_rate(self):
+        '''get_abs_firing_rate returns the absolute firing rate in Hz.
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        fr*1000: the absolute firing rate in Hz
+        '''
         time = self.offset-self.onset
 
         fr = len(self.spikedata[-1]['spks'])/(time/20)
         return fr*1000
 
     def get_inst_firing_rate(self):
+        '''get_inst_firing_rate returns the instantaneous firing rate in Hz.
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        inst_fr: the instantaneous firing rate in Hz
+        '''
         isi = []
 
         isi = np.diff(self.spikedata[-1]['spks'])/20
@@ -80,7 +140,14 @@ class Ephys_CC:
         return inst_fr
 
     def get_time_to_first_spike(self):
-
+        '''get_time_to_first_spike returns the time to the first spike in ms.
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        spike_inds: the time to the first spike in ms
+        '''
         spike_ind = 0
         spike_ind_val = 0
         for ind, each in enumerate(self.spikedata):
@@ -93,6 +160,17 @@ class Ephys_CC:
         return spike_inds     
 
     def get_isi_stats(self):
+        '''get_isi_stats returns the mean, max, min, and median inter-spike intervals (ISI) in ms.
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        mean_isi: the mean ISI in ms
+        max_isi: the maximum ISI in ms
+        min_isi: the minimum ISI in ms
+        median_isi: the median ISI in ms
+        '''
         isi = np.diff(self.spikedata[-1]['spks'])/20
         mean_isi = np.mean(isi)
         max_isi = np.max(isi)
@@ -101,7 +179,18 @@ class Ephys_CC:
         return mean_isi,max_isi,min_isi,median_isi    
 
     def get_threshold_stats(self):
-
+        '''get_threshold_stats returns the first, mean, max, min, and median threshold values.
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        first_thrs: the first threshold value
+        mean_thrs: the mean threshold value
+        max_thrs: the maximum threshold value
+        min_thrs: the minimum threshold value
+        median_thrs: the median threshold value
+        '''
         thrs = self.spikedata[-1]['thrs']
         mean_thrs = np.nanmean(thrs)
         max_thrs = np.nanmax(thrs)
@@ -110,7 +199,18 @@ class Ephys_CC:
         return thrs[0], mean_thrs,max_thrs,min_thrs,median_thrs      
 
     def get_halfwidth_stats(self):
-
+        '''get_halfwidth_stats returns the first, mean, max, min, and median half-width values.
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        first_hwidth: the first half-width value
+        mean_hwidth: the mean half-width value
+        median_hwidth: the median half-width value
+        max_hwidth: the maximum half-width value
+        min_hwidth: the minimum half-width value
+        '''
         hwidths = []
         for ind, step in enumerate(self.spikedata):
             if len(step['spks'])>1:
@@ -123,6 +223,18 @@ class Ephys_CC:
         return hwidths[0], np.mean(hwidths),np.median(hwidths),np.max(hwidths),np.min(hwidths)   
 
     def get_amplitude_stats(self):
+        '''get_amplitude_stats returns the first, mean, max, min, and median amplitude values.
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        first_amp: the first amplitude value
+        mean_amp: the mean amplitude value
+        median_amp: the median amplitude value
+        max_amp: the maximum amplitude value
+        min_amp: the minimum amplitude value
+        '''
         amp = []
         amp_ = []
         for ind, step in enumerate(self.spikedata):
@@ -143,6 +255,14 @@ class Ephys_CC:
         return amp[0][0], np.mean(amp),np.median(amp),np.max(amp),np.min(amp)    
 
     def get_all_ephys_vals(self):
+        '''get_all_ephys_vals returns all the ephys values as a list.
+        Parameters:
+        --------------
+        None
+        Returns:
+        --------------
+        List of all ephys values
+        '''
         current_first_spike = self.get_current_at_first_spike()
         ap_count = self.get_AP_count()
         abs_firing_rate = self.get_abs_firing_rate()
@@ -163,6 +283,18 @@ class Ephys_CC:
 
 
 def return_all_ephys_cc(path_cc,df_cc,already_analyzed):
+    '''
+    return_all_ephys_cc returns all the ephys values for the given path and dataframe.
+    Parameters:
+    --------------
+    path_cc: the path to the cell data
+    df_cc: the dataframe containing the cell information
+    already_analyzed: a list of already analyzed cells
+    Returns:
+    --------------
+    all_cc: a list of all the ephys values
+    prob_cell: a list of cells that had problems
+    '''
     df_cc = df_cc[df_cc.all_cc_names_and_dates==df_cc.fn_matches]
     file_cond = list(df_cc['CC_files'])
     cond = list(df_cc['condition'])
@@ -192,6 +324,18 @@ def return_all_ephys_cc(path_cc,df_cc,already_analyzed):
     return all_cc,prob_cell
 
 def return_all_ephys_cc_analyzed(path_cc, already_analyzed,running_data_with_drug=False):
+    '''
+    return_all_ephys_cc_analyzed returns all the ephys values for the given path and already analyzed cells.
+    Parameters:
+    --------------
+    path_cc: the path to the cell data
+    already_analyzed: a list of already analyzed cells
+    running_data_with_drug: a boolean indicating whether to include drug information
+    Returns:
+    --------------
+    all_cc: a list of all the ephys values
+    prob_cell: a list of cells that had problems
+    '''
     files  = os.listdir(path_cc)[:-1] 
     all_cc = []
     prob_cell = []
@@ -234,6 +378,15 @@ def return_all_ephys_cc_analyzed(path_cc, already_analyzed,running_data_with_dru
     return all_cc,prob_cell
 
 def return_waveforms(path):
+    '''return_waveforms returns the waveforms for the given path.
+    Parameters:
+    --------------
+    path: the path to the cell data
+    Returns:
+    --------------
+    waves: a list of all the waveforms
+    problem_cells: a list of cells that had problems
+    '''
     waves = []
     problem_cells = []
     for i in os.listdir(path):

@@ -21,10 +21,43 @@ from elephant import sta
 from single_cell_analysis import *
 
 
-#%%
 
 class EphysSet:
-    
+    '''A wrapper class for electrophysiology data from a single recording.
+    This class provides methods to extract various electrophysiological features from the data.
+    Attributes:
+    -----------
+    data (dict): The electrophysiology data.
+    cond (str): The condition of the recording.
+    exp_name (str): The name of the experiment.
+    trialnr (int): The trial number.
+    Methods:
+    -----------
+    remove_nan: Remove NaN values from an array-like input.
+    rolling_avg: Compute a simple rolling mean over the input data.
+    get_Vm: Return membrane-voltage windows around each threshold crossing.
+    get_dvdt: Return the mean positive and negative voltage slopes for each trace.
+    sub_threshold_resistance: Estimate the sub-threshold resistance from the voltage-current relation.
+    get_thresholds: Return the spike threshold values for the recording.
+    get_isi: Return inter-spike intervals for the detected spikes.
+    get_threshold_adaptation: Return threshold adaptation across successive spikes.
+    get_AP_peak: Return the peak voltage of each action-potential waveform.
+    get_AP_peak_adaptation: Return the adaptation of action-potential peak amplitudes.
+    get_AP_width: Return action-potential widths measured at half-height.
+    hyperpolarized_value: Return the minimum membrane potential in the recording.
+    first_spike: Return the index of the first detected spike threshold.
+    get_up_down_ratio: Return the ratio between up- and down-state analysis values.
+    subthreshold: Interpolate the trace around spikes to reduce spike artifacts.
+    isi_adaptation_index: Return the adaptation index based on successive inter-spike intervals.
+    threshold_adaptation_index: Return the threshold adaptation index across spikes.
+    psth: Return the peri-stimulus spike count summary for the trace.
+    get_inst_fr: Return the instantaneous firing rate from spike intervals.
+    get_MI: Return the mutual information (FI) value for the analyzed trace.
+    get_firing_rate: Return the firing-rate values from the recording metadata.
+    spike_frequency_adaptation: Return the adaptation of spike counts across time bins.
+    get_impedence: Return the impedance estimate for the recording.
+    get_ephys_vals: Return the derived electrophysiological feature vector for the recording.
+    '''
     def __init__(self,data,cond,exp_name,trialnr):
         """Initialize an electrophysiology dataset wrapper for one recording."""
 
@@ -420,7 +453,35 @@ class EphysSet:
         return ephys_data
 
 class EphysSet_niccolo:
-
+    '''A wrapper class for electrophysiology data from a single recording, following Niccolo's data structure.
+    This class provides methods to extract various electrophysiological features from the data.
+    Attributes: 
+    -----------
+    data (dict): The electrophysiology data.
+    cond (str): The condition of the recording.
+    exp_name (str): The name of the experiment.
+    trialnr (int): The trial number.
+    Methods:
+    -----------
+    remove_nan: Remove NaN values from an array-like input.
+    rolling_avg: Compute a simple rolling mean over the input data.
+    get_Vm: Return membrane-voltage windows around each detected spike.
+    compute_thresholds: Estimate spike thresholds from the provided waveforms.
+    compute_spikes_and_thresholds: Detect spikes and estimate their thresholds from the membrane potential.
+    return_quant_divided_by_time: Split a quantity by time windows and return the per-window values.
+    fano_factor: Compute the Fano factor for spike counts across time windows.
+    cv: Compute the coefficient of variation for inter-spike intervals across time windows.
+    get_MI: Return the mutual information (FI) value for the analyzed trace.
+    get_current_at_first_spike: Return the input current at the time of the first detected spike.
+    get_AP_count: Return the total number of detected action potentials in the recording.
+    get_abs_firing_rate: Return the absolute firing rate based on spike counts and recording duration
+    get_firing_rate: Return the firing-rate values from the recording metadata.
+    get_inst_fr: Return the instantaneous firing rate from spike intervals.
+    get_time_to_first_spike: Return the time to the first detected spike threshold.
+    get_isi: Return inter-spike intervals for the detected spikes.
+    get_thresholds: Return the spike threshold values for the recording.
+    get_AP_peak: Return the peak voltage of each action-potential waveform.
+    '''
     def __init__(self,data,cond,exp_name,trialnr,run_half=False,compute_spikes=False):
         """Initialize a wrapper for a Niccolo-style electrophysiology recording."""
 

@@ -280,6 +280,23 @@ def plot_bootstraped_data(data,savepath=None,cond=None,save=False,ei_type='exc')
 
 
 def add_fscore(data_ago,data_acsf,n_agonist,n_control):
+    '''
+    Function to add F-score and p-value to the dataframe.
+    parameters:
+    -----------
+    data_ago : pd.DataFrame
+        Dataframe containing the agonist data.
+    data_acsf : pd.DataFrame
+        Dataframe containing the acsf data.
+    n_agonist : int
+        Number of agonist samples.
+    n_control : int
+        Number of control samples.
+    returns:
+    --------
+    data_ago : pd.DataFrame
+        Dataframe containing the agonist data with added F-score and p-value columns.
+    '''
     data_ago['F'] = np.nan
     data_ago['p_value'] = np.nan
     for space in set(data_ago.Space):
@@ -293,7 +310,25 @@ def add_fscore(data_ago,data_acsf,n_agonist,n_control):
     return data_ago
 
 def F_test(variance_agonist,variance_control,n_agonist,n_control):
-
+    ''' 
+    Function to perform F-test on the given variance data.
+    parameters:
+    -----------
+    variance_agonist : numpy array
+        Array containing the variance data for the agonist condition.
+    variance_control : numpy array
+        Array containing the variance data for the control condition.
+    n_agonist : int
+        Number of agonist samples.
+    n_control : int
+        Number of control samples.
+    returns:
+    --------
+    F : float
+        F-statistic.
+    p_value : float
+        P-value.
+    '''
     # Determine F-statistic
     F = max(variance_control, variance_agonist) / min(variance_control, variance_agonist)
 

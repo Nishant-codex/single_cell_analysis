@@ -19,6 +19,17 @@ import numpy.matlib
 
 
 def makespectrumt(trace, timelen, adcrate):
+    '''makespectrumt computes the power spectrum of a given trace using FFT.
+    Parameters:
+    --------------
+    trace: the input trace
+    timelen: the time length of the trace
+    adcrate: the analog-to-digital conversion rate
+    Returns:
+    --------------
+    pwr: the power spectrum
+    fas: the frequency axis
+    '''
     # time is the timelength of the sub evaluation 1/time is the freq resolution!
     NFFT = timelen * adcrate
 
@@ -46,7 +57,20 @@ def makespectrumt(trace, timelen, adcrate):
 
 
 def calculate_impedance(par1, spoordac, spooradc, dacrate, adcrate, par2=None):
-
+    '''calculate_impedance computes the impedance of a given signal using the power spectrum.
+    Parameters:
+    --------------
+    par1: the time length of the trace
+    spoordac: the DAC trace
+    spooradc: the ADC trace
+    dacrate: the DAC sampling rate
+    adcrate: the ADC sampling rate
+    par2: the filter parameter (default is None)
+    Returns:
+    --------------
+    y: the impedance values
+    fas: the frequency axis
+    '''
     time = par1
     if par2 is None:
         nf = 0
@@ -75,6 +99,18 @@ def calculate_impedance(par1, spoordac, spooradc, dacrate, adcrate, par2=None):
 
 
 def spectrum_wytse(spoor, rate, par1, par2=None):
+    '''spectrum_wytse computes the power spectrum of a given signal using FFT.
+    Parameters:
+    --------------
+    spoor: the input signal
+    rate: the sampling rate
+    par1: the time length of the signal
+    par2: the filter parameter (default is None)
+    Returns:
+    --------------
+    x: the power spectrum
+    y: the frequency axis
+    '''
     time = par1
     if par2 == None:
         nf = 0
@@ -91,7 +127,18 @@ def spectrum_wytse(spoor, rate, par1, par2=None):
 
 
 def return_stiched_spike_train(data, subthreshold=False, plot=False):
-
+    '''return_stiched_spike_train stitches together the spike train of a given signal.
+    Parameters:
+    --------------
+    data: the input data
+    subthreshold: whether to include subthreshold events
+    plot: whether to plot the results
+    Returns:
+    --------------
+    zero_spikes: the stitched spike train
+    V_: the membrane potential
+    I_: the input current
+    '''
     V = data['membrane_potential']
     I = data['input_current']
     spikes = data['spikeindices']
@@ -136,14 +183,15 @@ def return_stiched_spike_train(data, subthreshold=False, plot=False):
 
 
 def get_impedence(data):
-    """_summary_
-
-    Args:
-        data (_type_): _description_
-
+    '''get_impedence computes the impedance of a given signal.
+    Parameters:
+    --------------
+    data: the input data
     Returns:
-        _type_: _description_
-    """
+    --------------
+    imp: the impedance values
+    fas: the frequency axis
+    '''
     I_acsf = data['input_current']
     V_acsf = data['membrane_potential']
     spk_acsf, V_acsf, I_acsf = return_stiched_spike_train(data)
@@ -152,6 +200,14 @@ def get_impedence(data):
 
 
 def normalizeBytheFirstValue(data_matrix):
+    '''normalizeBytheFirstValue normalizes the given data matrix by the first value of each column.
+    Parameters:
+    --------------
+    data_matrix: the input data matrix
+    Returns:
+    --------------
+    remaining: the normalized data matrix
+    '''
     npmat = np.array(data_matrix)
     firstVal = npmat[0, :]
     remaining = npmat[1:, :]
@@ -163,7 +219,19 @@ def normalizeBytheFirstValue(data_matrix):
 
 
 def plot_imp_condition(cond, exp_name=None, remove_spikes=True, plot=False, path_list=None, path_analyzed_data=None):
-
+    '''plot_imp_condition plots the impedance of a given condition.
+    Parameters:
+    --------------
+    cond: the condition to plot
+    exp_name: the name of the experiment
+    remove_spikes: whether to remove spikes from the data
+    plot: whether to plot the results
+    path_list: the path to the list of files
+    path_analyzed_data: the path to the analyzed data
+    Returns:
+    --------------
+    None
+    '''
     path_list = 'C:/Users/Nishant Joshi/Downloads/Old_code/lists/all_files_new.csv'
 
     path_analyzed_data = 'C:/Users/Nishant Joshi/Google Drive/Analyzed/'

@@ -11,9 +11,27 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import normalize
 import numpy as np
 from scipy import stats
-
+from matplotlib import pyplot as plt
 
 def plot_FI_vs_FR(data_acsf,data_drug,ax=None, plot=True, c = 'blue',x_lim = None, y_lim = None, save=False, savepath = None):
+    ''' Plots the change in FI vs change in FR for a given drug condition.
+    
+    Parameters:
+    --------------
+    data_acsf: dataframe containing the acsf condition data
+    data_drug: dataframe containing the drug condition data
+    ax: matplotlib axis object to plot on
+    plot: boolean, whether to plot the data or not
+    c: color of the points
+    x_lim: tuple, limits for the x-axis
+    y_lim: tuple, limits for the y-axis
+    save: boolean, whether to save the plot or not
+    savepath: string, path to save the plot
+    
+    Returns:
+    --------------
+    df_temp: dataframe containing the change in FI and FR for each cell     
+    '''
     ind_na = np.array(data_drug['FI'].isna())
     c_labels = []
     data_acsf = data_acsf[~ind_na]
@@ -60,6 +78,15 @@ def plot_FI_vs_FR(data_acsf,data_drug,ax=None, plot=True, c = 'blue',x_lim = Non
     return df_temp
 
 def binarize_EI_labels(labels, e_vals):
+    ''' Binarizes the EI labels based on the given excitatory values.
+    Parameters:
+    --------------
+    labels: list of EI labels
+    e_vals: list of excitatory values to be considered as 1, all others will be 0
+    Returns:    
+    --------------
+    temp_labels: list of binarized EI labels
+    '''
     temp_labels = labels
     for idx,vals in enumerate(labels):
         if vals in e_vals:
@@ -70,6 +97,14 @@ def binarize_EI_labels(labels, e_vals):
     return temp_labels
 
 def return_correct_names_for_neuromods(df):
+    ''' Returns the correct names for the neuromodulator conditions in the dataframe.
+    Parameters:
+    --------------
+    df: dataframe containing the neuromodulator conditions
+    Returns:
+    --------------
+    neuromod_list: dataframe with corrected neuromodulator condition names
+    '''
     neuromod_list = df.replace({'d1ago':'d1',
                                      'dop':'dopamine',
                                      'dopa':'dopamine',
@@ -79,7 +114,14 @@ def return_correct_names_for_neuromods(df):
     return neuromod_list
 
 def neumericalize_neurmods(df):
-    
+    ''' Returns the numerical values for the neuromodulator conditions in the dataframe.
+    Parameters:
+    --------------
+    df: dataframe containing the neuromodulator conditions
+    Returns:
+    --------------
+    numeric_list: list of numerical values for the neuromodulator conditions
+    '''
     numeric_list = df.cond.replace({'acsf'     :0,
                     'm1-ago'    :1,
                     'm1-ant'    :2,
@@ -113,6 +155,14 @@ def exponential_smoothing(data, alpha):
     return smoothed
 
 def return_paired_t_test(data_frame):
+    ''' Returns the paired t-test results for the given dataframe.
+    Parameters:
+    --------------
+    data_frame: dataframe containing the data for the t-test
+    Returns:
+    --------------
+    None
+    '''
     print(data_frame.cond.unique())
     t_statistic, p_value = stats.ttest_rel(data_frame[data_frame.cond=='acsf']['norm_peak_distance'], data_frame[data_frame.cond!='acsf']['norm_peak_distance'])
     print('norm_peak_distance', t_statistic, p_value)
@@ -121,6 +171,15 @@ def return_paired_t_test(data_frame):
     print('decay_time', t_statistic, p_value)
 
 def rise_time(data):
+    ''' Returns the rise time and peak value for the given data.
+    Parameters:
+    --------------
+    data: numpy array containing the data
+    Returns:
+    --------------
+    decay_time: float, the rise time of the data
+    max_val: float, the peak value of the data  
+    '''
     # data = data
     argmax = np.argmax(data)
     data_mod = data[argmax:]
@@ -135,6 +194,14 @@ def rise_time(data):
     return decay_time, max_val
 
 def return_peak_and_decay(df):
+    ''' Returns the peak and decay values for the given dataframe.
+    Parameters:
+    --------------
+    df: dataframe containing the data
+    Returns:
+    --------------
+    df: dataframe with added peak and decay columns
+    '''
     peak_vals_drug = []
     decay_vals_drug = []
 
@@ -153,11 +220,18 @@ def return_peak_and_decay(df):
     return df
 
 def return_acsf_and_drug(df,cond,joint=False,remove_duplicates=True,sample=None):
-    ''' Returns the acsf and drug dataframes for a given drug condition. 
-    If joint is True, returns a single dataframe with both conditions. 
-    If remove_duplicates is True, removes duplicate experiments from both dataframes. 
-    If sample is not None, samples the given number of rows from both dataframes.   
-    
+    ''' Returns the acsf and drug dataframes for the given condition.
+    Parameters: 
+    --------------
+    df: dataframe containing the data   
+    cond: string, the condition to filter the dataframe
+    joint: boolean, whether to return a joint dataframe or separate dataframes
+    remove_duplicates: boolean, whether to remove duplicate experiments or not
+    sample: int, number of samples to return from each dataframe
+    Returns:
+    --------------  
+    df_acsf: dataframe containing the acsf condition data
+    df_drug: dataframe containing the drug condition data
     '''
     exps = list(set(df[df.cond.isin(cond)]['exp_name']))
     df_new = df[df.exp_name.isin(exps)]
@@ -185,6 +259,16 @@ def return_acsf_and_drug(df,cond,joint=False,remove_duplicates=True,sample=None)
         return df_acsf, df_drug
     
 def heterogeniety_for_drug(df,cond,cols=None):
+    ''' Returns the heterogeneity for the given drug condition.
+    Parameters:
+    --------------
+    df: dataframe containing the data
+    cond: string, the drug condition to analyze
+    cols: list of columns to consider for heterogeneity calculation
+    Returns:
+    --------------
+    cosine_mat: numpy array containing the cosine similarity matrix
+    '''
     wave_drug = df[df.cond==cond]
     wave_acsf = df[df.cond=='acsf']
     cosine_mat = np.zeros((2,2))

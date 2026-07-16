@@ -1,5 +1,6 @@
 
 import matplotlib.pyplot as plt 
+import paxplot
 from sklearn.preprocessing import normalize 
 import numpy as np
 # import paxplot
@@ -20,6 +21,19 @@ from statannotations.Annotator import Annotator
 
 
 def pax_plot_data(data,cols,labels,pallete,savepath, save= False):
+    ''' Plots the data using paxplot.
+    Parameters: 
+    --------------
+    data: dataframe containing the data to plot
+    cols: list of columns to plot
+    labels: list of labels for the data
+    pallete: list of colors for the labels
+    savepath: path to save the plot 
+    save: boolean, whether to save the plot or not
+    Returns:    
+    --------------
+    None
+    '''
     # # Import data
 
     scaler_min = MinMaxScaler()
@@ -64,6 +78,25 @@ def pax_plot_data(data,cols,labels,pallete,savepath, save= False):
     plt.show()
 
 def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,figsize =[12,5],shuffle = False,save=False,savepath=None,cmap='BrBG_r',annot_kws=None):
+    ''' Returns the confusion matrix between two dataframes based on the given labels.
+    Parameters: 
+    --------------
+    df1: dataframe 1
+    df2: dataframe 2
+    label1_name: name of the label column in df1
+    label2_name: name of the label column in df2
+    vmin: minimum value for the colorbar
+    vmax: maximum value for the colorbar
+    figsize: size of the figure
+    shuffle: whether to shuffle the labels
+    save: whether to save the plot
+    savepath: path to save the plot
+    cmap: colormap for the heatmap
+    annot_kws: keyword arguments for annotation
+    Returns:
+    --------------
+    None
+    '''
     np.random.seed(42)
     if shuffle:
         fig,ax1 = plt.subplots(figsize =figsize )
@@ -123,6 +156,21 @@ def return_confusion_matrix_(df1,df2,label1_name,label2_name,vmin=0,vmax=100,fig
             plt.show()
 
 def plot_cosine_mat(data1, data2, label1, label2,figsize =[12,5], save = False, savepath = None,annot_kws=None):
+    ''' Plots the cosine similarity matrix between two datasets based on the given labels.
+    Parameters:
+    --------------
+    data1: first dataset
+    data2: second dataset
+    label1: labels for the first dataset
+    label2: labels for the second dataset
+    figsize: size of the figure
+    save: whether to save the plot
+    savepath: path to save the plot
+    annot_kws: keyword arguments for annotation
+    Returns:
+    --------------
+    None
+    '''
     cosine_mat = np.zeros((len(set(label1)),len(set(label2))))
     print(figsize)
     sim_data = cosine_similarity(data1,data2)
@@ -143,7 +191,20 @@ def plot_cosine_mat(data1, data2, label1, label2,figsize =[12,5], save = False, 
 
 def plot_significance_new(data,var,hue,ax,palette='mako',drug=False,test ='Mann-Whitney'):
 
-
+    ''' Plots the significance of the data based on the given variable and hue.
+    Parameters:
+    --------------
+    data: the dataset
+    var: the variable to plot
+    hue: the grouping variable
+    ax: the axes object
+    palette: the color palette
+    drug: whether to plot drug data
+    test: the statistical test to use
+    Returns:
+    --------------
+    None
+    '''
     ax.tick_params(axis='x', labelsize=20)
     ax.tick_params(axis='y', labelsize=20)
 
@@ -187,7 +248,17 @@ def plot_significance_new(data,var,hue,ax,palette='mako',drug=False,test ='Mann-
     plt.show()
 
 def plot_waveforms(df, save=False, savepath=None,c_list=None):
-
+    ''' Plots the waveforms of the data based on the given labels.
+    Parameters:
+    --------------
+    df: the dataset
+    save: whether to save the plot
+    savepath: path to save the plot
+    c_list: list of colors for each waveform
+    Returns:
+    --------------
+    None
+    '''
     for i in set(df.labels_wave):
         print(i)
         t = np.arange(0,6,1/20)
@@ -205,6 +276,24 @@ def plot_waveforms(df, save=False, savepath=None,c_list=None):
         plt.show()
 
 def plot_radar(data,cols,labels,figsize=(6, 6),lims=None,palette=None,logscale=True,save=False,savepath=None,label_font_size=12,linewidth=0.5):
+    ''' Plots a radar chart of the data based on the given columns and labels.
+    Parameters:
+    --------------
+    data: the dataset
+    cols: the columns to plot
+    labels: the labels for each data point
+    figsize: the size of the figure
+    lims: the limits of the y-axis
+    palette: the color palette
+    logscale: whether to use a logarithmic scale
+    save: whether to save the plot
+    savepath: path to save the plot
+    label_font_size: the size of the labels
+    linewidth: the width of the lines
+    Returns:
+    --------------
+    None
+    '''
     fig, ax = plt.subplots(figsize=figsize, subplot_kw=dict(polar=True))
     ax.yaxis.grid(color='lightgray', linestyle='--')
     zero_line_color = 'red'
@@ -257,13 +346,23 @@ def plot_radar(data,cols,labels,figsize=(6, 6),lims=None,palette=None,logscale=T
         plt.show()
 
 def cohend(d1, d2):
-	# calculate the size of samples
-	n1, n2 = len(d1), len(d2)
-	# calculate the variance of the samples
-	s1, s2 = np.var(d1), np.var(d2)
-	# calculate the pooled standard deviation
-	s = np.sqrt(((n1 - 1) * s1 + (n2 - 1) * s2) / (n1 + n2 - 2))
-	# calculate the means of the samples
-	u1, u2 = np.mean(d1), np.mean(d2)
-	# calculate the effect size
-	return (u1 - u2) / s        
+    ''' Calculates the Cohen's d effect size between two datasets.
+    Parameters:
+    --------------
+    d1: first dataset
+    d2: second dataset
+    Returns:
+    --------------
+    effect_size: the Cohen's d effect size
+    '''
+
+    # calculate the size of samples
+    n1, n2 = len(d1), len(d2)
+    # calculate the variance of the samples
+    s1, s2 = np.var(d1), np.var(d2)
+    # calculate the pooled standard deviation
+    s = np.sqrt(((n1 - 1) * s1 + (n2 - 1) * s2) / (n1 + n2 - 2))
+    # calculate the means of the samples
+    u1, u2 = np.mean(d1), np.mean(d2)
+    # calculate the effect size
+    return (u1 - u2) / s        

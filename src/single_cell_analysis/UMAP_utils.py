@@ -151,7 +151,18 @@ def plot_UMAP_clusters(data_inh,data_exc,neighbours,distance,condition_inh,condi
     return labels_exc, labels_inh
 
 def plot_UMAP_combined(data_exc,data_inh,neighbours,distance,labels,random_state,figsize):
-
+    '''plots UMAP for excitatory and inhibitory cells
+    Args:
+        data_inh (ndarray): cell X feature matrix for inhibitory cells
+        data_exc (ndarray): cell X feature matrix for excitatory cells
+        neighbours (int): number of neares neighbours
+        distance (float): minimum distance between points
+        labels (array): cluster labels for each cell
+        random_state (int): random state for reproducibility
+        figsize (tuple): figure size
+    returns:
+        None
+    '''
     data_scaler = StandardScaler()
     data_all = np.concatenate((data_inh,data_exc))
     data_all = data_scaler.fit_transform(data_all)
@@ -282,6 +293,16 @@ def plot_UMAP_values(data_inh, values,neighbours=20, distance=0.1, random_state=
     plt.show()
 
 def binarize_EI_labels(labels, e_vals):
+    ''' Binarizes the EI labels based on the given excitatory values.
+    Parameters:
+    --------------
+    labels (array): The EI labels to binarize.
+    e_vals (array): The excitatory values.
+
+    Returns:
+    --------
+    temp_labels (array): The binarized labels.
+    '''
     temp_labels = labels
     for idx,vals in enumerate(labels):
         if vals in e_vals:
@@ -292,6 +313,19 @@ def binarize_EI_labels(labels, e_vals):
     return temp_labels
 
 def return_confusion_matrix(df1,df2,label1_name,label2_name,shuffle = False):
+    ''' Returns the confusion matrix for the given labels.
+    Parameters:
+    --------------
+    df1 (pd.DataFrame): The first dataframe.
+    df2 (pd.DataFrame): The second dataframe.
+    label1_name (str): The name of the label column in the first dataframe.
+    label2_name (str): The name of the label column in the second dataframe.
+    shuffle (bool): Whether to shuffle the labels.
+
+    Returns:
+    --------
+    mat (np.ndarray): The confusion matrix.
+    '''
     np.random.seed(42)
     if shuffle:
         fig,[ax1,ax2] = plt.subplots(1,2,figsize = [12,5])
