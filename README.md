@@ -110,11 +110,13 @@ Below is a simplified workflow of the analysis pipeline:
 
 ```mermaid
 flowchart TD
-    A[Raw Electrophysiology Data] --> B[Feature Extraction]
-    B --> D[Clustering & Manifold Alignment]
-	D --> E[Multi-set correlation and Factor Analysis]
-    E --> F[Comparative Analysis: ACSF vs Drug]
-    F --> G[Figures & Results]
+    A[Raw Electrophysiology Data] --> B[QC and Preprocessing]
+    B --> C[Feature Extraction]
+    B --> D[GLIF Model Fitting]
+    D --> C
+    C --> E[Clustering & Manifold Alignment]
+	C --> F[Multi-set correlation and Factor Analysis]
+    C --> G[Comparative Analysis: ACSF vs Drug]
 ```
 
 ---
