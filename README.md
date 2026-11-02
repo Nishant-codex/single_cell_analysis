@@ -7,15 +7,16 @@
 
 This repository contains the analysis code, Jupyter notebooks, and extracted feature files accompanying the following publications:  
 
-Joshi N, van Der Burg S, Celikel T, Zeldenrust F (2025) Neuronal identity is not static: An input-driven perspective. PLoS Comput Biol 21(12): e1013821. https://doi.org/10.1371/journal.pcbi.1013821 
+Joshi N, van Der Burg S, Celikel T, Zeldenrust F (2025) Neuronal identity is not static: An input-driven perspective. PLoS Comput Biol 21(12): e1013821. https://doi.org/10.1371/journal.pcbi.1013821. 
 
-Neuromodulatory Control of Cortical Function: Cell-Type Specific Regulation of Neuronal Information Transfer
-Nishant Joshi, Xuan Yan, Niccolo Calcini, Payam Safavi, Asli Ak, Koen Kole, Sven van der Burg, Tansu Celikel, Fleur Zeldenrust
-bioRxiv 2026.03.13.711516; doi: https://doi.org/10.64898/2026.03.13.711516
+N. Joshi, X. Yan, N. Calcini, P. Safavi, A. Ak, K. Kole, S. van der Burg, T. Celikel, & F. Zeldenrust, Neuromodulatory control of cortical function: Cell-type-specific regulation of neuronal information transfer, Proc. Natl. Acad. Sci. U.S.A. 123 (43) e2609893123, https://doi.org/10.1073/pnas.2609893123 (2026).
+
+Dataset 
+Joshi, N., Celikel, T., Zeldenrust, F., Kole, K., Safavi, S.P., Ak, A., Yan, X., Calcini, N. (2026): Neuromodulatory influence on information transfer of single cortical neurons. Version 1. Radboud University. (dataset). https://doi.org/10.34973/nhes-qe97. 
 
 Extracted Features  
 
-Joshi, N., Zeldenrust, F.& Celikel, T. (2025). Data files for: Neuronal Identity is not static: an input-driven perspective [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.17625155
+Joshi, N., Zeldenrust, F., & Celikel, T. (2025). Data files for: Neuronal Identity is not static: an input-driven perspective [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.17625155.
 
 ---
 
